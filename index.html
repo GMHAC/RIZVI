@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RIZVI-MANAGEMENT — Integrated Management &amp; Business Intelligence System</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage-compat.js"></script>
+<style>
+:root{
+  --bg:#07070a; --panel:#121016; --panel2:#1a1620; --line:#2a2432;
+  --ink:#f3eee2; --ink-dim:#a79c8c;
+  --gold:#d4af37; --gold-dim:#8a7327; --gold-glow:rgba(212,175,55,.35);
+  --red:#b91c1c; --red-glow:rgba(185,28,28,.35);
+  --green:#22c55e; --yellow:#eab308; --danger:#ef4444;
+  --user-bg:#fbf6e9; --user-card:#ffffff; --user-line:#efe6cf;
+  font-family:'Segoe UI',-apple-system,'Noto Sans Bengali',Arial,sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);min-height:100vh;}
+.hidden{display:none !important;}
+a{color:inherit;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:#332b3e;border-radius:8px;}
+
+/* ---------------- GATE / AUTH ---------------- */
+#gate{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 20% 10%,#241423,#07070a 55%);padding:20px;}
+.gateWrap{width:100%;max-width:420px;}
+.gateLogo{text-align:center;margin-bottom:18px;}
+.gateLogo .rose{font-size:42px;filter:drop-shadow(0 0 14px var(--gold-glow));}
+.gateLogo h1{margin:6px 0 2px;font-size:22px;letter-spacing:.04em;
+  background:linear-gradient(135deg,#f3d98a,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.gateLogo p{margin:0;color:var(--ink-dim);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;}
+.portalTabs{display:flex;gap:8px;margin-bottom:16px;}
+.portalTabs button{flex:1;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--panel);
+  color:var(--ink-dim);cursor:pointer;font-weight:600;font-size:13px;}
+.portalTabs button.active{background:linear-gradient(135deg,#3a2c12,#241a08);color:var(--gold);border-color:var(--gold-dim);}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;}
+.authTabs{display:flex;gap:6px;margin-bottom:16px;background:var(--panel2);padding:4px;border-radius:10px;}
+.authTabs button{flex:1;padding:8px;border-radius:8px;border:none;background:transparent;color:var(--ink-dim);
+  cursor:pointer;font-size:12.5px;font-weight:600;}
+.authTabs button.active{background:var(--gold);color:#1a1305;}
+label{display:block;font-size:11.5px;color:var(--ink-dim);margin:0 0 5px;letter-spacing:.03em;}
+input,select,textarea{width:100%;padding:11px 12px;border-radius:9px;border:1px solid var(--line);
+  background:var(--panel2);color:var(--ink);margin-bottom:12px;font-size:14px;}
+input::placeholder,textarea::placeholder{color:#6e6577;}
+.idKind{display:flex;gap:8px;margin-bottom:10px;}
+.idKind button{flex:1;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);
+  color:var(--ink-dim);cursor:pointer;font-size:12px;}
+.idKind button.active{border-color:var(--gold);color:var(--gold);}
+button.primary{width:100%;padding:12px;border-radius:9px;border:none;cursor:pointer;font-weight:700;font-size:14px;
+  background:linear-gradient(135deg,#f0d27a,var(--gold));color:#1a1305;box-shadow:0 6px 18px var(--gold-glow);}
+button.primary.red{background:linear-gradient(135deg,#e05555,var(--red));color:#fff;box-shadow:0 6px 18px var(--red-glow);}
+.err{color:var(--danger);font-size:12px;min-height:16px;margin-top:6px;}
+.ok{color:var(--green);font-size:12px;min-height:16px;margin-top:6px;}
+.linkish{background:none;border:none;color:var(--gold);cursor:pointer;font-size:12.5px;padding:0;text-decoration:underline;}
+.gateFoot{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:14px;}
+
+/* ---------------- ADMIN SHELL ---------------- */
+#adminApp{display:none;min-height:100vh;grid-template-columns:250px 1fr;}
+#adminApp.show{display:grid;}
+#aSidebar{background:linear-gradient(180deg,#100c14,#0a0810);border-right:1px solid var(--line);
+  padding:16px 10px;overflow-y:auto;max-height:100vh;position:sticky;top:0;}
+.brandRow{display:flex;gap:10px;align-items:center;padding:6px 8px 16px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.brandRow .rose{font-size:26px;}
+.brandRow b{display:block;font-size:15px;color:var(--gold);letter-spacing:.03em;}
+.brandRow span{display:block;font-size:9.5px;color:var(--ink-dim);letter-spacing:.05em;}
+.navSectionLbl{font-size:10px;color:#655c72;text-transform:uppercase;letter-spacing:.08em;padding:12px 10px 6px;}
+.navA{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;color:var(--ink);
+  text-decoration:none;font-size:12.8px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.navA:hover{background:var(--panel2);}
+.navA.active{background:linear-gradient(90deg,#3a2c12,transparent);color:var(--gold);font-weight:600;}
+.navGroupHead{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:9px;
+  cursor:pointer;font-size:12.8px;color:var(--ink);}
+.navGroupHead:hover{background:var(--panel2);}
+.navGroupHead .cnt{background:var(--panel2);color:var(--ink-dim);font-size:10px;border-radius:999px;padding:1px 7px;}
+.subnav{display:none;max-height:260px;overflow-y:auto;padding-left:6px;}
+.subnav.open{display:block;}
+.subnav a{display:block;padding:6px 10px 6px 22px;font-size:12px;color:var(--ink-dim);text-decoration:none;border-radius:7px;}
+.subnav a:hover{background:var(--panel2);color:var(--ink);}
+
+#aMain{overflow-x:hidden;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;
+  border-bottom:1px solid var(--line);background:rgba(18,16,22,.7);position:sticky;top:0;z-index:20;backdrop-filter:blur(6px);}
+.topbar .left{display:flex;align-items:center;gap:10px;}
+.topbar .status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green);}
+.dotlive{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.6s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.topbar .right{display:flex;align-items:center;gap:14px;}
+.iconBtn{position:relative;background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-dim);font-size:15px;}
+.iconBtn:hover{color:var(--gold);border-color:var(--gold-dim);}
+.badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:9px;border-radius:999px;
+  width:16px;height:16px;display:flex;align-items:center;justify-content:center;}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#f0d27a,var(--gold));
+  display:flex;align-items:center;justify-content:center;font-weight:700;color:#1a1305;font-size:13px;}
+.pageWrap{padding:22px 26px;}
+h2.pageTitle{margin:0 0 4px;font-size:20px;color:var(--ink);}
+.crumbs{color:var(--ink-dim);font-size:12px;margin-bottom:18px;}
+
+/* dashboard toggle */
+.dashToggle{display:flex;gap:8px;margin-bottom:18px;}
+.dashToggle button{padding:9px 18px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);
+  color:var(--ink-dim);cursor:pointer;font-size:12.5px;font-weight:600;}
+.dashToggle button.active.exec{background:linear-gradient(135deg,#5c1a1a,#2a0d0d);color:#ff9d9d;border-color:var(--red);}
+.dashToggle button.active.hr{background:linear-gradient(135deg,#4a3a10,#241c08);color:#ffe08a;border-color:var(--gold);}
+
+.cmdCenter{border-radius:18px;padding:20px;position:relative;overflow:hidden;border:1px solid var(--line);margin-bottom:20px;}
+.cmdCenter.exec{background:radial-gradient(circle at 85% 20%,rgba(185,28,28,.18),transparent 55%),
+  linear-gradient(160deg,#150708,#0a0507 70%);}
+.cmdCenter.hr{background:radial-gradient(circle at 85% 20%,rgba(212,175,55,.18),transparent 55%),
+  linear-gradient(160deg,#151008,#0a0805 70%);}
+.cmdHead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.cmdHead h3{margin:0;font-size:16px;letter-spacing:.03em;}
+.cmdCenter.exec .cmdHead h3{color:#ff8f8f;}
+.cmdCenter.hr .cmdHead h3{color:#ffdb8a;}
+.cmdHead small{display:block;color:var(--ink-dim);font-size:11px;margin-top:2px;}
+.cmdGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+@media(max-width:1100px){.cmdGrid{grid-template-columns:1fr;}}
+.cmdLeft .kpiRow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.kpiCard{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:12px 14px;}
+.kpiCard .lbl{font-size:9.5px;letter-spacing:.06em;color:var(--ink-dim);text-transform:uppercase;}
+.kpiCard .num{font-size:22px;font-weight:800;margin:4px 0 2px;color:var(--ink);}
+.kpiCard .delta{font-size:10.5px;color:var(--green);}
+.chartCard{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;margin-bottom:12px;}
+.chartCard .t{font-size:10.5px;letter-spacing:.05em;color:var(--ink-dim);text-transform:uppercase;margin-bottom:8px;}
+.roseHero{display:flex;align-items:center;justify-content:center;position:relative;}
+.roseHero .roseGlyph{font-size:150px;filter:drop-shadow(0 0 40px currentColor);animation:float 5s ease-in-out infinite;}
+.cmdCenter.exec .roseGlyph{color:#8a1414;}
+.cmdCenter.hr .roseGlyph{color:#8a6d10;}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-10px) rotate(2deg);}}
+.cmdRight .alertBox{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;margin-bottom:12px;}
+.alertBox .t{font-size:10.5px;letter-spacing:.05em;color:#ff9d9d;text-transform:uppercase;margin-bottom:8px;}
+.cmdCenter.hr .alertBox .t{color:#ffe08a;}
+.alertRow{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:12px;}
+.alertRow:last-child{border-bottom:none;}
+.alertRow .time{color:var(--ink-dim);font-size:10.5px;white-space:nowrap;}
+.leadPanel{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px;text-align:center;}
+.leadPanel .crown{font-size:30px;}
+.leadPanel h4{margin:8px 0 2px;font-size:13px;letter-spacing:.06em;}
+.cmdCenter.exec .leadPanel h4{color:#ff9d9d;}
+.cmdCenter.hr .leadPanel h4{color:#ffdb8a;}
+.leadPanel p{font-size:11px;color:var(--ink-dim);line-height:1.5;margin:6px 0 0;}
+
+.progBar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:4px;}
+.progBar>i{display:block;height:100%;border-radius:6px;}
+.topSecRow{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:8px;}
+.topSecRow .pct{font-weight:700;}
+
+.grid{display:grid;gap:14px;}
+.g4{grid-template-columns:repeat(4,1fr);}
+.g3{grid-template-columns:repeat(3,1fr);}
+.g2{grid-template-columns:repeat(2,1fr);}
+@media(max-width:1000px){.g4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:repeat(2,1fr);}}
+.panelCard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;}
+.kpi .num{font-size:24px;font-weight:800;}
+.kpi .lbl{color:var(--ink-dim);font-size:11.5px;margin-top:4px;}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+.pill.green{background:#0f2e1c;color:var(--green);}
+.pill.yellow{background:#332a05;color:var(--yellow);}
+.pill.red{background:#3a1414;color:#ff8080;}
+table{width:100%;border-collapse:collapse;font-size:12.8px;}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;}
+th{color:var(--ink-dim);font-weight:600;font-size:10.8px;text-transform:uppercase;letter-spacing:.04em;}
+.smallGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
+.miniCard{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;text-decoration:none;color:var(--ink);cursor:pointer;}
+.miniCard:hover{border-color:var(--gold-dim);}
+.miniCard .ic{font-size:20px;}
+.miniCard .t{font-size:13px;font-weight:600;margin:8px 0 2px;}
+.miniCard .n{font-size:10.5px;color:var(--ink-dim);}
+button.util{background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:10px 13px;border-radius:9px;
+  cursor:pointer;font-size:12.3px;display:flex;align-items:center;gap:6px;}
+button.util:hover{border-color:var(--gold-dim);}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-dim);padding:8px 13px;
+  border-radius:9px;cursor:pointer;font-size:12.3px;}
+button.ghost:hover{color:var(--ink);}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;}
+.formRow{margin-bottom:12px;}
+
+/* bubble dashboard */
+.bubbleWrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;}
+
+/* modal */
+.modalMask{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100;padding:16px;}
+.modalMask.show{display:flex;}
+.modalBox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;}
+.modalBox h3{margin:0 0 14px;font-size:16px;}
+.closeX{float:right;background:none;border:none;color:var(--ink-dim);font-size:18px;cursor:pointer;}
+
+/* file rows */
+.fileRow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px;}
+.fileRow .fname{flex:1;}
+.fileRow .fsize{color:var(--ink-dim);font-size:11px;}
+.miniProg{height:5px;border-radius:5px;background:var(--panel2);margin-top:4px;overflow:hidden;}
+.miniProg>i{display:block;height:100%;background:var(--gold);}
+
+/* toast */
+#toast{position:fixed;bottom:20px;right:20px;background:var(--panel2);border:1px solid var(--gold-dim);
+  color:var(--ink);padding:12px 18px;border-radius:10px;font-size:13px;z-index:200;display:none;box-shadow:0 8px 24px rgba(0,0,0,.5);}
+
+/* mobile drawer */
+.hamburger{display:none;background:none;border:none;color:var(--ink);font-size:20px;cursor:pointer;}
+@media(max-width:920px){
+  #adminApp.show{grid-template-columns:1fr;}
+  #aSidebar{position:fixed;left:-270px;top:0;width:250px;height:100vh;z-index:60;transition:left .25s;}
+  #aSidebar.open{left:0;}
+  .hamburger{display:flex;}
+  .cmdGrid{grid-template-columns:1fr;}
+}
+
+/* ================= USER APP (light warm theme) ================= */
+#userApp{display:none;min-height:100vh;background:var(--user-bg);color:#2a2113;}
+#userApp.show{display:block;}
+.uTopbar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fff;
+  border-bottom:1px solid var(--user-line);position:sticky;top:0;z-index:30;}
+.uTopbar .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;color:#8a6d10;}
+.uTopbar .brand .rose{font-size:20px;}
+.uTopbar .right{display:flex;gap:10px;align-items:center;}
+.uIconBtn{position:relative;background:#fbf6e9;border:1px solid var(--user-line);border-radius:9px;
+  width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;}
+.uWrap{max-width:640px;margin:0 auto;padding:14px 14px 90px;}
+.roseHeroCard{position:relative;border-radius:16px;overflow:hidden;padding:24px 18px;margin-bottom:14px;
+  background:linear-gradient(135deg,#fff6d8,#ffe9a8 55%,#f8d978);}
+.roseHeroCard .bigrose{position:absolute;right:-10px;top:-20px;font-size:150px;opacity:.5;filter:drop-shadow(0 0 30px #f3d357);animation:float 6s ease-in-out infinite;}
+.roseHeroCard h2{margin:0 0 4px;font-size:21px;color:#4a3a10;position:relative;}
+.roseHeroCard .live{display:inline-flex;align-items:center;gap:6px;background:#e9f7ec;color:#1f8a3c;
+  font-size:11px;padding:4px 10px;border-radius:999px;margin-top:6px;position:relative;}
+.roseHeroCard .lastup{font-size:11px;color:#6b5a20;margin-top:6px;position:relative;}
+.uStatRow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.uStatCard{background:#fff;border:1px solid var(--user-line);border-radius:12px;padding:12px;text-align:center;}
+.uStatCard .n{font-size:20px;font-weight:800;}
+.uStatCard.green .n{color:#1f8a3c;}
+.uStatCard.yellow .n{color:#c8961f;}
+.uStatCard.red .n{color:#c23c3c;}
+.uStatCard .l{font-size:10.5px;color:#8a7d5e;margin-top:2px;}
+.feedCard{background:#fff;border:1px solid var(--user-line);border-radius:12px;padding:6px 12px;margin-bottom:14px;}
+.feedRow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3ecd8;font-size:12.8px;}
+.feedRow:last-child{border-bottom:none;}
+.feedDot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.feedRow .txt{flex:1;}
+.feedRow .t{font-size:10.5px;color:#a4966e;}
+.ctaBtn{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#ffe9a8,#f6d264);
+  border:1px solid #ecc85a;border-radius:12px;padding:14px 16px;margin-bottom:14px;cursor:pointer;}
+.ctaBtn .l{font-weight:700;font-size:13.5px;color:#4a3a10;}
+.ctaBtn .s{font-size:11px;color:#6b5a20;margin-top:2px;}
+.ctaBtn .go{width:38px;height:38px;border-radius:50%;background:#f6c02b;display:flex;align-items:center;justify-content:center;color:#3a2c05;}
+
+.uSearchBar{display:flex;align-items:center;background:#fff;border:1px solid var(--user-line);border-radius:12px;
+  padding:11px 14px;margin-bottom:10px;font-size:13px;color:#a4966e;}
+.uFilters{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;}
+.uFilters button{white-space:nowrap;padding:8px 13px;border-radius:999px;border:1px solid var(--user-line);
+  background:#fff6da;color:#7a6a2e;font-size:12px;cursor:pointer;}
+.teamBlock{background:#fff;border:1px solid var(--user-line);border-radius:12px;margin-bottom:10px;overflow:hidden;}
+.teamHead{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer;font-weight:700;font-size:13px;}
+.teamHead .cnt{font-weight:400;color:#a4966e;font-size:12px;}
+.taskRow{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid #f3ecd8;}
+.taskAvatar{width:34px;height:34px;border-radius:50%;background:#e9f7ec;color:#1f8a3c;display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;}
+.taskRow .body{flex:1;min-width:0;}
+.taskRow .ttl{font-size:12.8px;font-weight:600;}
+.taskRow .sub{font-size:11px;color:#a4966e;}
+.statusPill{font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap;}
+.statusPill.done{background:#e9f7ec;color:#1f8a3c;}
+.statusPill.partial{background:#fdf3d6;color:#c8961f;}
+.statusPill.pending{background:#fbe6e6;color:#c23c3c;}
+
+.uBottomNav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--user-line);
+  display:flex;justify-content:space-around;padding:8px 0 10px;z-index:40;}
+.uBottomNav a{display:flex;flex-direction:column;align-items:center;gap:2px;color:#a4966e;font-size:10.5px;
+  text-decoration:none;cursor:pointer;padding:4px 12px;border-radius:10px;}
+.uBottomNav a.active{color:#c8961f;background:#fff6da;}
+.uBottomNav a .ic{font-size:18px;}
+
+.sheetMask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:100;}
+.sheetMask.show{display:flex;}
+.sheet{background:#fff;width:100%;max-width:640px;border-radius:18px 18px 0 0;padding:16px 18px 22px;max-height:88vh;overflow-y:auto;}
+.sheetHandle{width:40px;height:4px;background:#e6dcbf;border-radius:4px;margin:0 auto 14px;}
+.sheet label{font-size:12px;color:#7a6a2e;margin:10px 0 6px;display:block;}
+.sheet select, .sheet textarea, .sheet input{width:100%;border:1px solid var(--user-line);border-radius:10px;
+  padding:11px;font-size:13.5px;background:#fdfaf1;color:#2a2113;}
+.yn3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0;}
+.yn3 button{padding:11px 6px;border-radius:10px;border:2px solid var(--user-line);background:#fff;cursor:pointer;font-size:12.5px;font-weight:700;color:#7a6a2e;}
+.yn3 button.selYes{border-color:#1f8a3c;background:#e9f7ec;color:#1f8a3c;}
+.yn3 button.selNo{border-color:#c23c3c;background:#fbe6e6;color:#c23c3c;}
+.yn3 button.selPartial{border-color:#c8961f;background:#fdf3d6;color:#c8961f;}
+.attachGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0;}
+.attachBtn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;border-radius:10px;
+  border:1px solid var(--user-line);background:#fdfaf1;cursor:pointer;font-size:9.5px;color:#7a6a2e;text-align:center;}
+.attachBtn .ic{font-size:19px;}
+.attachBtn.rec.on{border-color:#c23c3c;background:#fbe6e6;color:#c23c3c;}
+.submitBtn{width:100%;padding:13px;border-radius:11px;border:none;background:linear-gradient(135deg,#ffe9a8,#f6c02b);
+  color:#3a2c05;font-weight:700;font-size:14px;cursor:pointer;margin-top:8px;}
+
+/* utility */
+.mt8{margin-top:8px;}.mt14{margin-top:14px;}.mb0{margin-bottom:0;}
+.flexBetween{display:flex;justify-content:space-between;align-items:center;}
+.smallMuted{color:var(--ink-dim);font-size:11.5px;}
+
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- ============ AUTH GATE ============ -->
+<div id="gate">
+  <div class="gateWrap">
+    <div class="gateLogo">
+      <div class="rose">🌹</div>
+      <h1>RIZVI-MANAGEMENT</h1>
+      <p>Integrated Management &amp; Business Intelligence System</p>
+    </div>
+    <div class="portalTabs">
+      <button data-portal="admin" class="active" onclick="showPortal('admin')">🔐 Admin Portal</button>
+      <button data-portal="user" onclick="showPortal('user')">👤 Employee Portal</button>
+    </div>
+
+    <div id="adminPortal" class="card">
+      <label>Admin Email</label>
+      <input id="ad_email" type="email" placeholder="ssheraji@gmail.com">
+      <label>Password</label>
+      <input id="ad_pass" type="password" placeholder="••••••••">
+      <button class="primary red" onclick="adminLogin()">Admin লগইন করুন</button>
+      <div class="err" id="ad_err"></div>
+    </div>
+
+    <div id="userPortal" class="card hidden">
+      <div class="authTabs">
+        <button id="utab_signin" class="active" onclick="showAuthTab('signin')">Sign in</button>
+        <button id="utab_signup" onclick="showAuthTab('signup')">Sign up</button>
+        <button id="utab_forgot" onclick="showAuthTab('forgot')">Forgot</button>
+      </div>
+
+      <div id="ut_signin">
+        <label>Email অথবা Mobile Number</label>
+        <input id="si_id" placeholder="you@example.com / 01XXXXXXXXX">
+        <label>Password</label>
+        <input id="si_pass" type="password" placeholder="••••••••">
+        <button class="primary" onclick="userSignin()">Sign In</button>
+        <div class="err" id="si_err"></div>
+      </div>
+
+      <div id="ut_signup" class="hidden">
+        <label>পূর্ণ নাম</label>
+        <input id="su_name" placeholder="আপনার নাম লিখুন">
+        <div class="idKind">
+          <button id="idk_email" class="active" onclick="setIdKind('email')">📧 Email</button>
+          <button id="idk_phone" onclick="setIdKind('phone')">📱 Mobile</button>
+        </div>
+        <input id="su_id" placeholder="you@example.com">
+        <label>বিভাগ (Section)</label>
+        <select id="su_dept"><option>Accounts & Finance</option>
+<option>Admin ,HR & Compliance</option>
+<option>Audit</option>
+<option>CAD</option>
+<option>Commercial</option>
+<option>Cutting</option>
+<option>Cutting Quality</option>
+<option>Electrical</option>
+<option>Fabric</option>
+<option>Finishing</option>
+<option>Finishing Quality</option>
+<option>IE</option>
+<option>Marketing & Merchandising</option>
+<option>Mechanical</option>
+<option>Planning</option>
+<option>Procurement</option>
+<option>Production</option>
+<option>QA Audit</option>
+<option>Quality</option>
+<option>Quality Receive</option>
+<option>Receive</option>
+<option>Sample</option>
+<option>Security</option>
+<option>Sewing</option>
+<option>Sewing Quality</option>
+<option>Size Set</option>
+<option>Stock Lot</option>
+<option>Store Quality</option>
+<option>Store</option>
+<option>Others</option></select>
+        <label>পদবি (Designation)</label>
+        <select id="su_desig"><option>A.G.M</option>
+<option>A.S.M.O</option>
+<option>Assort Man</option>
+<option>Asst. Boilar Operator</option>
+<option>Asst. Bundle Man</option>
+<option>Asst. Cutter</option>
+<option>Asst. Electrician</option>
+<option>Asst. Heat Seal Man</option>
+<option>Asst. Incharge</option>
+<option>Asst. Issue Man</option>
+<option>Asst. Lay Man</option>
+<option>Asst. Manager</option>
+<option>Asst. Mechanic</option>
+<option>Asst. Merchandiser</option>
+<option>Asst. Officer</option>
+<option>Asst. Print Delivery Man</option>
+<option>Asst. Printer</option>
+<option>Asst. Production Manager</option>
+<option>Asst. Quality  Incharge</option>
+<option>Asst. Receive Man</option>
+<option>Asst. Relax Man</option>
+<option>Asst. Scissor Man</option>
+<option>Asst. Supervisor</option>
+<option>Asst.Executive</option>
+<option>Asst.Manager</option>
+<option>Asst.Mechanic Incharge</option>
+<option>Asst.Reporter</option>
+<option>Asst.Technical Incharge</option>
+<option>Auditor</option>
+<option>Boilar Supervisor</option>
+<option>Boiler Operator</option>
+<option>Bundle Man</option>
+<option>Button Supervisor</option>
+<option>Canteen Boy</option>
+<option>Child Care</option>
+<option>Civil Engineer</option>
+<option>Cleaner</option>
+<option>Cleaner Supervisor</option>
+<option>Cook</option>
+<option>Cutter Man</option>
+<option>Cutting Asst.</option>
+<option>Cutting Incharge</option>
+<option>Cutting Supervisor</option>
+<option>Cutting Technician</option>
+<option>Deputy General Manager</option>
+<option>Deputy Manager</option>
+<option>Driver</option>
+<option>Driver.</option>
+<option>E.C.O</option>
+<option>Electric Incharge</option>
+<option>Electric Supervisor</option>
+<option>Electric Technician</option>
+<option>Executive</option>
+<option>Fabric Incharge</option>
+<option>Fashion Designer</option>
+<option>Finishing Asst.</option>
+<option>Finishing Incharge</option>
+<option>Fire Man</option>
+<option>Fire Safety Officer</option>
+<option>Folder</option>
+<option>Folding Supervisor</option>
+<option>G.P.Q</option>
+<option>General Electrician</option>
+<option>General Manager</option>
+<option>Generator Supervisor</option>
+<option>Heat Seal Man</option>
+<option>Heat Seal Supervisor</option>
+<option>Input Man</option>
+<option>Input Supervisor (Cutting)</option>
+<option>Iron .Supervisor</option>
+<option>Iron Man</option>
+<option>Issue Man</option>
+<option>Jr Bundle Man</option>
+<option>Jr Cutter Man</option>
+<option>Jr Heat Seal Man</option>
+<option>Jr Lay Man</option>
+<option>Jr Poly man</option>
+<option>Jr Scissor Man</option>
+<option>Jr Spot Man</option>
+<option>Jr Sticker Man</option>
+<option>Jr Tag Man</option>
+<option>Jr Writer Man</option>
+<option>Jr. Bundle Man</option>
+<option>Jr. Folder</option>
+<option>Jr. Input Man</option>
+<option>Jr. Iron Man</option>
+<option>Jr. Issue Man</option>
+<option>Jr. Merchandiser</option>
+<option>Jr. Metal Detector Operator</option>
+<option>Jr. Numbering Man</option>
+<option>Jr. Officer</option>
+<option>Jr. Packer</option>
+<option>Jr. Piping M.O</option>
+<option>Jr. Q.I</option>
+<option>Jr. Receive Man</option>
+<option>Jr. S.M.O (B/T)</option>
+<option>Jr. S.M.O (F/D)</option>
+<option>Jr. S.M.O (F/L)</option>
+<option>Jr. S.M.O (O/L)</option>
+<option>Jr. S.M.O (P/M)</option>
+<option>Jr. S.M.O (Z/Z)</option>
+<option>Jr. Scissor Man</option>
+<option>Jr. Security Guard</option>
+<option>Jr. Spotman</option>
+<option>Jr.Computer Operator</option>
+<option>Jr.E.C.O</option>
+<option>Jr.Executive</option>
+<option>Jr.Lady Guard</option>
+<option>Jr.Needle Man</option>
+<option>Jr.Piping M.O</option>
+<option>Jr.Plamber</option>
+<option>Jr.Poly Man</option>
+<option>Jr.Print Delivery Man</option>
+<option>Jr.Relax Man</option>
+<option>Jr.T.S.M.O</option>
+<option>Jr.Tag Man</option>
+<option>Lift Operator</option>
+<option>Line Ironman</option>
+<option>Loader</option>
+<option>Loader Supervisor</option>
+<option>MTO</option>
+<option>Machine Technician</option>
+<option>Manager</option>
+<option>Mechanic Incharge</option>
+<option>Medical Assistant</option>
+<option>Medical Asst.</option>
+<option>Medical Officer</option>
+<option>Merchandiser</option>
+<option>Messenger</option>
+<option>Nurse</option>
+<option>Officer</option>
+<option>Packer</option>
+<option>Packing Supervisor</option>
+<option>Peon</option>
+<option>Piping M. O</option>
+<option>Poly Man</option>
+<option>Poly Woman</option>
+<option>Print Delivery Man</option>
+<option>Product Safety Officer</option>
+<option>Production Manager</option>
+<option>Production Reporter</option>
+<option>Q.I</option>
+<option>Quality Incharge</option>
+<option>Quality Supervisor</option>
+<option>Receive Incharge</option>
+<option>Receive Man</option>
+<option>Receive Supervisor</option>
+<option>S.M.O (F/D)</option>
+<option>S.M.O B/T</option>
+<option>S.M.O F/L</option>
+<option>S.M.O O/L</option>
+<option>S.M.O P/M</option>
+<option>S.M.O Z/Z</option>
+<option>S.S.M.O (B/T)</option>
+<option>S.S.M.O (F/D)</option>
+<option>S.S.M.O (F/L)</option>
+<option>S.S.M.O (O/L)</option>
+<option>S.S.M.O (P/M)</option>
+<option>Sample Man.</option>
+<option>Sample Supervisor</option>
+<option>Security Guard</option>
+<option>Security Supervisor</option>
+<option>Sewing Incharge</option>
+<option>Sewing Supervisor</option>
+<option>Sewing Technician</option>
+<option>Size Set Incharge</option>
+<option>Spotman</option>
+<option>Sr. Cutter Man</option>
+<option>Sr. Executive</option>
+<option>Sr. Manager</option>
+<option>Sr. Merchandiser</option>
+<option>Sr. Officer</option>
+<option>Sr. Production Manager</option>
+<option>Sr. Q.I</option>
+<option>Sr. Sample Man</option>
+<option>Sr. Spotman</option>
+<option>Sr.Finishing Supervisor</option>
+<option>Sr.G.P.Q</option>
+<option>Sr.Iron Supervisor</option>
+<option>Sr.Quality Supervisor</option>
+<option>Sr.Receive  Supervisor</option>
+<option>Sr.Receive Man</option>
+<option>Sr.Sample Man</option>
+<option>Sr.Sewing Supervisor</option>
+<option>Store Asst</option>
+<option>Store Keeper</option>
+<option>Store Supervisor</option>
+<option>Sweeper</option>
+<option>T.S.M.O</option>
+<option>Tag Man</option>
+<option>Technical Incharge</option>
+<option>Technician (AC)</option>
+<option>Telephone Operator</option>
+<option>Trainee Merchandiser</option>
+<option>Welder.</option>
+<option>Welfare Officer</option></select>
+        <label>Password</label>
+        <input id="su_pass" type="password" placeholder="••••••••">
+        <button class="primary" onclick="userSignup()">Sign Up</button>
+        <div class="err" id="su_err"></div>
+      </div>
+
+      <div id="ut_forgot" class="hidden">
+        <label>Email অথবা Mobile Number</label>
+        <input id="fp_id" placeholder="you@example.com / 01XXXXXXXXX">
+        <button class="primary" onclick="userForgot()">রিসেট লিংক পাঠান</button>
+        <div class="ok" id="fp_ok"></div>
+      </div>
+    </div>
+    <div class="gateFoot" id="gateFoot">© 2026 RIZVI FASHIONS LTD. — RIZVI-MANAGEMENT v1.0.0</div>
+  </div>
+</div>
+
+<!-- ============ ADMIN APP ============ -->
+<div id="adminApp">
+  <div id="aSidebar">
+    <div class="brandRow">
+      <span class="rose">🌹</span>
+      <div><b>RIZVI</b><span>Management — Admin</span></div>
+    </div>
+    <div class="navSectionLbl">Overview</div>
+    <a class="navA active" data-page="dashboard" onclick="go('dashboard')">📊 Dashboard</a>
+    <a class="navA" data-page="bubble" onclick="go('bubble')">🫧 Live Bubble Dashboard</a>
+    <a class="navA" data-page="isochecklist" onclick="go('isochecklist')">📋 ISO Checklist (সব মডিউল)</a>
+    <div class="navSectionLbl">Operational Management</div>
+    <div id="aNavModules"></div>
+    <div class="navSectionLbl">Sections</div>
+    <div class="navGroupHead" onclick="toggleSectionGroup()">🏷️ All Sections <span class="cnt" id="secCount">0</span></div>
+    <div id="aNavSections" class="subnav"></div>
+    <div class="navSectionLbl">System</div>
+    <a class="navA" data-page="admincontrol" onclick="go('admincontrol')">⚙️ Settings / Admin Control</a>
+    <a class="navA" onclick="logout()">🚪 Logout</a>
+  </div>
+  <div id="aMain">
+    <div class="topbar">
+      <div class="left">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <div class="status"><span class="dotlive"></span> <span id="syncStatusTxt">RIZVI Management System — Live</span></div>
+      </div>
+      <div class="right">
+        <div class="iconBtn" onclick="toast('সার্চ শীঘ্রই যুক্ত হবে')">🔍</div>
+        <div class="iconBtn" onclick="go('admincontrol')">🔔<span class="badge" id="notifBadge">0</span></div>
+        <div class="iconBtn" onclick="go('admincontrol')" title="Settings">⚙️</div>
+        <div class="avatar" id="adminAvatar">SA</div>
+        <div><b id="adminName" style="font-size:12.5px;"></b></div>
+      </div>
+    </div>
+    <div class="pageWrap"><div id="aMainContent"></div></div>
+  </div>
+</div>
+
+<!-- ============ USER APP ============ -->
+<div id="userApp">
+  <div class="uTopbar">
+    <div class="brand"><span class="rose">🌹</span> Rizvi Management</div>
+    <div class="right">
+      <div class="uIconBtn" onclick="toast('নোটিফিকেশন শীঘ্রই যুক্ত হবে')">🔔</div>
+      <div class="avatar" id="uInitials" style="width:32px;height:32px;font-size:12px;"></div>
+    </div>
+  </div>
+  <div class="uWrap">
+    <div id="page_dash"></div>
+    <div id="page_tasks" class="hidden"></div>
+    <div id="page_updates" class="hidden"></div>
+    <div id="page_profile" class="hidden"></div>
+  </div>
+  <div class="uBottomNav">
+    <a id="nav_dash" class="active" onclick="goUser('dash')"><span class="ic">🏠</span>ড্যাশবোর্ড</a>
+    <a id="nav_tasks" onclick="goUser('tasks')"><span class="ic">📋</span>কাজ</a>
+    <a id="nav_updates" onclick="goUser('updates')"><span class="ic">☁️</span>আপডেট</a>
+    <a id="nav_profile" onclick="goUser('profile')"><span class="ic">👤</span>প্রোফাইল</a>
+  </div>
+</div>
+
+<!-- ============ UPDATE SHEET (shared modal) ============ -->
+<div class="sheetMask" id="updateSheetMask">
+  <div class="sheet">
+    <div class="sheetHandle"></div>
+    <div class="flexBetween"><h3 id="sheetTitle" style="margin:0;font-size:15px;">আজকের কাজের আপডেট</h3>
+      <button class="closeX" onclick="closeSheet()">✕</button></div>
+    <label>কাজ নির্বাচন করুন</label>
+    <select id="sh_task"></select>
+    <label>আপনার আপডেট দিন</label>
+    <div class="yn3">
+      <button id="sh_Yes" onclick="pickStatus('Yes')">✅ হ্যাঁ</button>
+      <button id="sh_No" onclick="pickStatus('No')">❌ না</button>
+      <button id="sh_Partial" onclick="pickStatus('Partial')">➖ আংশিক</button>
+    </div>
+    <label>কারণ বা কাজের নোট (প্রযোজ্য ক্ষেত্রে)</label>
+    <textarea id="sh_note" rows="3" maxlength="500" placeholder="কাজের অগ্রগতি বা কারণ লিখুন" oninput="noteCount()"></textarea>
+    <div style="text-align:right;font-size:10.5px;color:#a4966e;margin-top:-8px;" id="sh_count">0/500</div>
+    <label>সংযুক্তি যোগ করুন</label>
+    <div class="attachGrid">
+      <div class="attachBtn" onclick="pickFile('doc')"><span class="ic">📘</span>Word/PDF</div>
+      <div class="attachBtn" onclick="pickFile('xls')"><span class="ic">📗</span>Excel/CSV</div>
+      <div class="attachBtn" onclick="pickFile('img')"><span class="ic">🖼️</span>ছবি</div>
+      <div class="attachBtn" onclick="pickFile('vid')"><span class="ic">🎥</span>ভিডিও</div>
+      <div class="attachBtn" onclick="pickFile('aud')"><span class="ic">🎙️</span>অডিও</div>
+    </div>
+    <div id="sh_files"></div>
+    <button class="submitBtn" onclick="submitSheet()">⬆️ আপডেট জমা দিন</button>
+  </div>
+</div>
+
+<script>
+/* ============ FIREBASE (FREE "Spark" PLAN) — OPTIONAL LIVE SYNC ============
+   ধাপ ১: https://console.firebase.google.com -এ গিয়ে একটি ফ্রি প্রজেক্ট বানান (Spark Plan — কার্ড লাগে না)
+   ধাপ ২: Project settings → General → "Add app" → Web (</>) থেকে নিচের মতো একটি config অবজেক্ট পাবেন
+   ধাপ ৩: নিচের firebaseConfig-এ আপনার নিজের মান বসান, ফাইল সেভ করুন — সাথে সাথেই সব ডিভাইসে লাইভ সিঙ্ক চালু হয়ে যাবে
+   ধাপ ৪: Firebase Console-এ Authentication → Email/Password চালু করুন, এবং Firestore Database + Storage তৈরি করুন
+   কনফিগার না করলে অ্যাপ স্বয়ংক্রিয়ভাবে "Local Demo Mode"-এ চলবে (শুধু এই ব্রাউজারে ডেটা থাকবে)। */
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_PROJECT.appspot.com",
+  messagingSenderId: "PASTE_YOUR_SENDER_ID",
+  appId: "PASTE_YOUR_APP_ID"
+};
+let fbAuth=null, fbDb=null, fbStorage=null, useFirebase=false;
+try{
+  if(typeof firebase!=='undefined' && firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('PASTE_')!==0){
+    firebase.initializeApp(firebaseConfig);
+    fbAuth = firebase.auth(); fbDb = firebase.firestore(); fbStorage = firebase.storage();
+    fbDb.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+    useFirebase = true;
+  }
+}catch(e){ console.warn('Firebase init failed, falling back to Local Demo Mode', e); useFirebase=false; }
+
+function syncStatusText(){ return useFirebase ? '🟢 Firebase Live Sync সক্রিয়' : '🟡 Local Demo Mode (Firebase কনফিগার করা হয়নি)'; }
+
+/* ============ DATA ============ */
+const MODULES = [{"icon": "🏢", "name": "Corporate & Strategic Management"}, {"icon": "📢", "name": "Management Communication & Live Conference"}, {"icon": "🤝", "name": "Buyer & Trading House Management"}, {"icon": "👥", "name": "HRM – Full Human Resource Management"}, {"icon": "⏱️", "name": "Attendance & Payroll Management"}, {"icon": "🎓", "name": "Training & Competency Management"}, {"icon": "❤️", "name": "Welfare Management"}, {"icon": "🏥", "name": "Medical Management"}, {"icon": "📣", "name": "Grievance Management"}, {"icon": "⚖️", "name": "Compliance Management"}, {"icon": "📋", "name": "Integrated ISO Management System"}, {"icon": "🔎", "name": "Internal Audit Management"}, {"icon": "🧾", "name": "External / Buyer Audit Management"}, {"icon": "⚠️", "name": "Risk Management"}, {"icon": "🔄", "name": "CAPA & Continual Improvement"}, {"icon": "🛡️", "name": "HSE / Occupational Health & Safety"}, {"icon": "🌱", "name": "Environmental Management"}, {"icon": "♻️", "name": "Waste Management"}, {"icon": "🧪", "name": "Chemical Management"}, {"icon": "🔐", "name": "IT & Information Security Management"}, {"icon": "📁", "name": "Document & Record Management"}, {"icon": "📊", "name": "KPI & Performance Management"}, {"icon": "📅", "name": "Planning Management"}, {"icon": "📐", "name": "IE Management"}, {"icon": "🏭", "name": "Production Management"}, {"icon": "🔍", "name": "Quality Assurance / QC Management"}, {"icon": "🧵", "name": "Fabric Management"}, {"icon": "🧷", "name": "Accessories Management"}, {"icon": "🛒", "name": "Procurement Management"}, {"icon": "📦", "name": "Inventory & Store Management"}, {"icon": "🏷️", "name": "Marking & Traceability Management"}, {"icon": "💰", "name": "Accounts & Finance Management"}, {"icon": "🚢", "name": "Commercial Management"}, {"icon": "🔧", "name": "Maintenance Management"}, {"icon": "⚡", "name": "Utility & Energy Management"}, {"icon": "♻️", "name": "Jhute / Leftover / Stock Lot Management"}, {"icon": "🚨", "name": "Emergency & Crisis Management"}, {"icon": "🔄", "name": "Business Continuity Management"}, {"icon": "📝", "name": "Task & Workflow Management"}, {"icon": "📈", "name": "Reports & Analytics"}, {"icon": "🔔", "name": "Notification & Alert Center"}, {"icon": "🔐", "name": "User / Role / Permission Management"}, {"icon": "🗃️", "name": "Master Data Management"}, {"icon": "⚙️", "name": "System Administration"}];
+const SECTIONS = ["Accounts & Finance", "Admin ,HR & Compliance", "Audit", "CAD", "Commercial", "Cutting", "Cutting Quality", "Electrical", "Fabric", "Finishing", "Finishing Quality", "IE", "Marketing & Merchandising", "Mechanical", "Planning", "Procurement", "Production", "QA Audit", "Quality", "Quality Receive", "Receive", "Sample", "Security", "Sewing", "Sewing Quality", "Size Set", "Stock Lot", "Store Quality", "Store", "Others"];
+const DESIGNATIONS = ["A.G.M", "A.S.M.O", "Assort Man", "Asst. Boilar Operator", "Asst. Bundle Man", "Asst. Cutter", "Asst. Electrician", "Asst. Heat Seal Man", "Asst. Incharge", "Asst. Issue Man", "Asst. Lay Man", "Asst. Manager", "Asst. Mechanic", "Asst. Merchandiser", "Asst. Officer", "Asst. Print Delivery Man", "Asst. Printer", "Asst. Production Manager", "Asst. Quality  Incharge", "Asst. Receive Man", "Asst. Relax Man", "Asst. Scissor Man", "Asst. Supervisor", "Asst.Executive", "Asst.Manager", "Asst.Mechanic Incharge", "Asst.Reporter", "Asst.Technical Incharge", "Auditor", "Boilar Supervisor", "Boiler Operator", "Bundle Man", "Button Supervisor", "Canteen Boy", "Child Care", "Civil Engineer", "Cleaner", "Cleaner Supervisor", "Cook", "Cutter Man", "Cutting Asst.", "Cutting Incharge", "Cutting Supervisor", "Cutting Technician", "Deputy General Manager", "Deputy Manager", "Driver", "Driver.", "E.C.O", "Electric Incharge", "Electric Supervisor", "Electric Technician", "Executive", "Fabric Incharge", "Fashion Designer", "Finishing Asst.", "Finishing Incharge", "Fire Man", "Fire Safety Officer", "Folder", "Folding Supervisor", "G.P.Q", "General Electrician", "General Manager", "Generator Supervisor", "Heat Seal Man", "Heat Seal Supervisor", "Input Man", "Input Supervisor (Cutting)", "Iron .Supervisor", "Iron Man", "Issue Man", "Jr Bundle Man", "Jr Cutter Man", "Jr Heat Seal Man", "Jr Lay Man", "Jr Poly man", "Jr Scissor Man", "Jr Spot Man", "Jr Sticker Man", "Jr Tag Man", "Jr Writer Man", "Jr. Bundle Man", "Jr. Folder", "Jr. Input Man", "Jr. Iron Man", "Jr. Issue Man", "Jr. Merchandiser", "Jr. Metal Detector Operator", "Jr. Numbering Man", "Jr. Officer", "Jr. Packer", "Jr. Piping M.O", "Jr. Q.I", "Jr. Receive Man", "Jr. S.M.O (B/T)", "Jr. S.M.O (F/D)", "Jr. S.M.O (F/L)", "Jr. S.M.O (O/L)", "Jr. S.M.O (P/M)", "Jr. S.M.O (Z/Z)", "Jr. Scissor Man", "Jr. Security Guard", "Jr. Spotman", "Jr.Computer Operator", "Jr.E.C.O", "Jr.Executive", "Jr.Lady Guard", "Jr.Needle Man", "Jr.Piping M.O", "Jr.Plamber", "Jr.Poly Man", "Jr.Print Delivery Man", "Jr.Relax Man", "Jr.T.S.M.O", "Jr.Tag Man", "Lift Operator", "Line Ironman", "Loader", "Loader Supervisor", "MTO", "Machine Technician", "Manager", "Mechanic Incharge", "Medical Assistant", "Medical Asst.", "Medical Officer", "Merchandiser", "Messenger", "Nurse", "Officer", "Packer", "Packing Supervisor", "Peon", "Piping M. O", "Poly Man", "Poly Woman", "Print Delivery Man", "Product Safety Officer", "Production Manager", "Production Reporter", "Q.I", "Quality Incharge", "Quality Supervisor", "Receive Incharge", "Receive Man", "Receive Supervisor", "S.M.O (F/D)", "S.M.O B/T", "S.M.O F/L", "S.M.O O/L", "S.M.O P/M", "S.M.O Z/Z", "S.S.M.O (B/T)", "S.S.M.O (F/D)", "S.S.M.O (F/L)", "S.S.M.O (O/L)", "S.S.M.O (P/M)", "Sample Man.", "Sample Supervisor", "Security Guard", "Security Supervisor", "Sewing Incharge", "Sewing Supervisor", "Sewing Technician", "Size Set Incharge", "Spotman", "Sr. Cutter Man", "Sr. Executive", "Sr. Manager", "Sr. Merchandiser", "Sr. Officer", "Sr. Production Manager", "Sr. Q.I", "Sr. Sample Man", "Sr. Spotman", "Sr.Finishing Supervisor", "Sr.G.P.Q", "Sr.Iron Supervisor", "Sr.Quality Supervisor", "Sr.Receive  Supervisor", "Sr.Receive Man", "Sr.Sample Man", "Sr.Sewing Supervisor", "Store Asst", "Store Keeper", "Store Supervisor", "Sweeper", "T.S.M.O", "Tag Man", "Technical Incharge", "Technician (AC)", "Telephone Operator", "Trainee Merchandiser", "Welder.", "Welfare Officer"];
+const ISO_BASE = [{"clause": "4.4", "item": "প্রক্রিয়া (Process) সংজ্ঞায়িত ও ডকুমেন্টেড আছে"}, {"clause": "5.1", "item": "ম্যানেজমেন্ট লিডারশিপ ও কমিটমেন্ট নিশ্চিত করা হয়েছে"}, {"clause": "6.1", "item": "ঝুঁকি ও সুযোগ (Risk & Opportunity) চিহ্নিত করা হয়েছে"}, {"clause": "7.1.5", "item": "পরিমাপ/মনিটরিং যন্ত্রপাতি ক্যালিব্রেটেড ও সচল"}, {"clause": "7.2", "item": "সংশ্লিষ্ট কর্মীদের প্রশিক্ষণ/কম্পিটেন্সি রেকর্ড হালনাগাদ"}, {"clause": "7.5", "item": "প্রয়োজনীয় ডকুমেন্ট ও রেকর্ড সংরক্ষিত ও সহজলভ্য"}, {"clause": "8.1", "item": "অপারেশনাল প্ল্যানিং ও নিয়ন্ত্রণ যথাযথভাবে অনুসরণ করা হচ্ছে"}, {"clause": "8.5", "item": "প্রোডাকশন/সার্ভিস প্রোভিশন নিয়ন্ত্রিত অবস্থায় পরিচালিত হচ্ছে"}, {"clause": "8.7", "item": "অসামঞ্জস্যপূর্ণ (Non-conforming) আউটপুট চিহ্নিত ও পৃথকীকৃত"}, {"clause": "9.1", "item": "পারফরম্যান্স মনিটরিং, পরিমাপ ও বিশ্লেষণ চলমান আছে"}, {"clause": "9.2", "item": "অভ্যন্তরীণ অডিট (Internal Audit) সময়মতো সম্পন্ন হয়েছে"}, {"clause": "10.2", "item": "অসামঞ্জস্য পাওয়া গেলে CAPA (Corrective Action) গ্রহণ করা হয়েছে"}];
+const ADMIN_CRED = {email:'ssheraji@gmail.com', password:'Admin123456'};
+const TEAM_NAMES = ['সেলস টিম','অপারেশনস টিম','ফাইন্যান্স টিম'];
+const DEMO_TASKS = [
+  {t:'ক্লায়েন্ট ফলো-আপ', team:'সেলস টিম', who:'রিজভি আহমেদ', init:'RA', due:'আজ ৮:০০ PM'},
+  {t:'নতুন কোয়েটেশন শেয়ার', team:'সেলস টিম', who:'সুমাইয়া নাসরিন', init:'SN', due:'কাল ১১:৩০ AM'},
+  {t:'দৈনিক স্টক রিপোর্ট', team:'অপারেশনস টিম', who:'মাহফুজ হাসান', init:'MH', due:'আজ ৫:৩০ PM'},
+  {t:'গুদাম ইনভেন্টরি ভেরিফিকেশন', team:'অপারেশনস টিম', who:'আল আমিন', init:'AK', due:'কাল ৩:০০ PM'},
+  {t:'বিল যাচাই', team:'ফাইন্যান্স টিম', who:'ফারহান সাকিব', init:'FS', due:'আজ ২:০০ PM'}
+];
+
+/* ============ STORAGE HELPERS ============ */
+function db(key, fallback){
+  try{ const v = localStorage.getItem('rz_'+key); return v? JSON.parse(v): fallback; }catch(e){ return fallback; }
+}
+function setDb(key, val){ localStorage.setItem('rz_'+key, JSON.stringify(val)); }
+
+/* ---- Firestore mirror helpers (only active when useFirebase===true) ---- */
+function fsSet(coll, id, data){
+  if(!useFirebase) return;
+  fbDb.collection(coll).doc(String(id)).set(data, {merge:true}).catch(e=>console.warn('Firestore write failed ('+coll+')', e));
+}
+function fsDelete(coll, id){
+  if(!useFirebase) return;
+  fbDb.collection(coll).doc(String(id)).delete().catch(e=>console.warn('Firestore delete failed ('+coll+')', e));
+}
+const _fsUnsubs = [];
+function fsListen(coll, localKey, onAfter){
+  if(!useFirebase) return;
+  const unsub = fbDb.collection(coll).onSnapshot(snap=>{
+    const arr = [];
+    snap.forEach(doc=> arr.push(doc.data()));
+    arr.sort((a,b)=> (b.t||b.joined||0)-(a.t||a.joined||0));
+    localStorage.setItem('rz_'+localKey, JSON.stringify(arr));
+    if(onAfter) onAfter(arr);
+  }, err=>console.warn('Firestore listen failed ('+coll+')', err));
+  _fsUnsubs.push(unsub);
+}
+function startFirestoreSync(){
+  if(!useFirebase) return;
+  fsListen('activity', 'activity', ()=>{
+    refreshNotifBadge();
+    const cur = document.querySelector('#aMain [data-current]');
+    if(cur && cur.dataset.current==='dashboard') renderDashboard(currentDashMode);
+    pushUserFeed();
+  });
+  fsListen('users', 'users', ()=>{ if(document.getElementById('aMainContent') && document.getElementById('aMainContent').innerHTML.includes('Admin Control')) renderAdminControl(); });
+  fsListen('employees', 'employees', ()=>{});
+  fsListen('trash', 'trash', ()=>{});
+  fsListen('isoChecklist', 'isoChecklist_arr', (arr)=>{
+    const map = {}; arr.forEach(r=>{ if(r.key){ const {key, updatedAt, updatedBy, ...rest} = r; map[key]=rest; } });
+    setDb('isoChecklist', map);
+    const cur = document.querySelector('#aMainContent select#iso_mod');
+    if(cur) isoRefresh();
+  });
+  fsListen('userUpdates', 'userUpdates', ()=>{
+    if(document.getElementById('page_updates') && !document.getElementById('page_updates').classList.contains('hidden')) renderUserUpdates();
+  });
+}
+
+function seed(){
+  if(!localStorage.getItem('rz_seeded')){
+    setDb('users', []);
+    setDb('employees', []);
+    setDb('activity', [
+      {id:1, sec:'Sewing', name:'সালাউদ্দিন আহমেদ', status:'done', txt:'স্টক রিপোর্ট জমা দিয়েছেন', t:Date.now()-600000},
+      {id:2, sec:'Finishing', name:'জাহিদুল ইসলাম', status:'done', txt:'ডেলিভারি সম্পন্ন করেছেন', t:Date.now()-1560000},
+      {id:3, sec:'Quality', name:'মোছা. মুসরাত জাহান', status:'partial', txt:'কাস্টমার ভিজিট আংশিক', t:Date.now()-2400000},
+      {id:4, sec:'Store', name:'ররিউল করিম', status:'done', txt:'ডকুমেন্ট আপলোড করেছেন', t:Date.now()-7200000}
+    ]);
+    setDb('moduleConfig', {});
+    setDb('trash', []);
+    localStorage.setItem('rz_seeded','1');
+  }
+}
+seed();
+
+function session(){ return db('session', null); }
+function setSession(s){ setDb('session', s); }
+function logActivity(entry){
+  const a = db('activity', []);
+  const rec = Object.assign({id:Date.now()+'_'+Math.random().toString(36).slice(2,7)}, entry, {t:Date.now()});
+  a.unshift(rec);
+  setDb('activity', a.slice(0,80));
+  fsSet('activity', rec.id, rec);
+}
+
+/* ============ TOAST ============ */
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>{ el.style.display='none'; }, 2600);
+}
+
+/* ============ PORTAL / AUTH SCREEN ============ */
+function showPortal(kind){
+  document.getElementById('adminPortal').classList.toggle('hidden', kind!=='admin');
+  document.getElementById('userPortal').classList.toggle('hidden', kind!=='user');
+  document.querySelectorAll('.portalTabs button').forEach(b=>b.classList.toggle('active', b.dataset.portal===kind));
+}
+function showAuthTab(tab){
+  ['signin','signup','forgot'].forEach(t=>{
+    document.getElementById('ut_'+t).classList.toggle('hidden', t!==tab);
+    document.getElementById('utab_'+t).classList.toggle('active', t===tab);
+  });
+}
+let signupIdKind='email';
+function setIdKind(kind){
+  signupIdKind = kind;
+  document.getElementById('idk_email').classList.toggle('active', kind==='email');
+  document.getElementById('idk_phone').classList.toggle('active', kind==='phone');
+  document.getElementById('su_id').placeholder = kind==='email' ? 'you@example.com' : '01XXXXXXXXX';
+}
+
+function adminLogin(){
+  const email = document.getElementById('ad_email').value.trim();
+  const pass = document.getElementById('ad_pass').value;
+  const err = document.getElementById('ad_err');
+  if(email===ADMIN_CRED.email && pass===ADMIN_CRED.password){
+    setSession({role:'admin', name:'শেরাজী এডমিন', email});
+    err.textContent='';
+    boot();
+  } else {
+    err.textContent = 'ভুল ইমেইল অথবা পাসওয়ার্ড।';
+  }
+}
+
+function userSignup(){
+  const name = document.getElementById('su_name').value.trim();
+  const id = document.getElementById('su_id').value.trim();
+  const dept = document.getElementById('su_dept').value;
+  const desig = document.getElementById('su_desig').value;
+  const pass = document.getElementById('su_pass').value;
+  const err = document.getElementById('su_err');
+  if(!name||!id||!pass){ err.textContent='সব ঘর পূরণ করুন।'; return; }
+  err.textContent='';
+  if(useFirebase && signupIdKind==='email'){
+    fbAuth.createUserWithEmailAndPassword(id, pass).then(cred=>{
+      const uid = cred.user.uid;
+      const u = {id, uid, name, dept, desig, kind:'email', status:'active', joined:Date.now()};
+      fsSet('users', uid, u);
+      logActivity({sec:dept||'Others', name, status:'done', txt:'নতুন ইউজার যোগ হয়েছেন'});
+      setSession({role:'user', id, uid});
+      toast('স্বাগতম, একাউন্ট তৈরি হয়েছে (Firebase)!');
+      boot();
+    }).catch(e=>{ err.textContent = fbAuthErr(e); });
+    return;
+  }
+  const users = db('users', []);
+  if(users.some(u=>u.id===id)){ err.textContent='এই আইডি দিয়ে আগেই একাউন্ট আছে।'; return; }
+  const u = {id, name, dept, desig, pass, kind:signupIdKind, status:'active', joined:Date.now()};
+  users.push(u); setDb('users', users);
+  fsSet('users', id, u);
+  logActivity({sec:dept||'Others', name, status:'done', txt:'নতুন ইউজার যোগ হয়েছেন'});
+  setSession({role:'user', id});
+  toast('স্বাগতম, একাউন্ট তৈরি হয়েছে!'+(useFirebase?'':' (Local Demo Mode — মোবাইল আইডি এখনো Firebase Auth সমর্থন করে না)'));
+  boot();
+}
+function fbAuthErr(e){
+  const map = {'auth/email-already-in-use':'এই ইমেইল দিয়ে আগেই একাউন্ট আছে।','auth/weak-password':'পাসওয়ার্ড কমপক্ষে ৬ ক্যারেক্টার হতে হবে।',
+    'auth/invalid-email':'সঠিক ইমেইল দিন।','auth/user-not-found':'একাউন্ট পাওয়া যায়নি।','auth/wrong-password':'পাসওয়ার্ড ভুল।'};
+  return map[e.code] || (e.message || 'একটি সমস্যা হয়েছে, আবার চেষ্টা করুন।');
+}
+function userSignin(){
+  const id = document.getElementById('si_id').value.trim();
+  const pass = document.getElementById('si_pass').value;
+  const err = document.getElementById('si_err');
+  err.textContent='';
+  if(useFirebase && id.includes('@')){
+    fbAuth.signInWithEmailAndPassword(id, pass).then(cred=>{
+      setSession({role:'user', id, uid:cred.user.uid});
+      boot();
+    }).catch(e=>{ err.textContent = fbAuthErr(e); });
+    return;
+  }
+  const users = db('users', []);
+  const u = users.find(x=>x.id===id && x.pass===pass);
+  if(!u){ err.textContent='আইডি অথবা পাসওয়ার্ড সঠিক নয়।'; return; }
+  if(u.status==='inactive'){ err.textContent='এই একাউন্টটি নিষ্ক্রিয় করা হয়েছে। HR-এর সাথে যোগাযোগ করুন।'; return; }
+  setSession({role:'user', id});
+  boot();
+}
+function userForgot(){
+  const id = document.getElementById('fp_id').value.trim();
+  const ok = document.getElementById('fp_ok');
+  if(!id){ ok.textContent=''; return; }
+  if(useFirebase && id.includes('@')){
+    fbAuth.sendPasswordResetEmail(id).then(()=>{ ok.textContent = 'একটি আসল রিসেট লিংক '+id+'-এ পাঠানো হয়েছে (Firebase)।'; })
+      .catch(e=>{ ok.textContent = fbAuthErr(e); });
+    return;
+  }
+  ok.textContent = 'একটি রিসেট লিংক '+id+'-এ পাঠানো হয়েছে (Local Demo Mode)।';
+}
+function logout(){ setDb('session', null); location.reload(); }
+
+/* ============ BOOT / ROUTER ============ */
+function boot(){
+  const s = session();
+  document.getElementById('gate').classList.toggle('hidden', !!s);
+  document.getElementById('adminApp').classList.toggle('show', s && s.role==='admin');
+  document.getElementById('userApp').classList.toggle('show', s && s.role==='user');
+  if(s && s.role==='admin'){ initAdmin(); }
+  if(s && s.role==='user'){ initUser(); }
+}
+
+/* ============ ADMIN APP ============ */
+let adminInited=false;
+function initAdmin(){
+  document.getElementById('adminName').textContent = session().name || 'Admin';
+  document.getElementById('adminAvatar').textContent = 'SA';
+  buildAdminSidebar();
+  renderAdminPage('dashboard');
+  if(!adminInited){
+    adminInited=true;
+    startFirestoreSync();
+    if(!useFirebase) setInterval(liveTick, 6000); /* demo-mode simulated live feed; Firestore mode gets real pushes instead */
+    refreshNotifBadge();
+  }
+}
+function buildAdminSidebar(){
+  const nav = document.getElementById('aNavModules');
+  nav.innerHTML = MODULES.map((m,i)=>`<a class="navA" data-page="mod:${i}" onclick="go('mod:${i}')">${m.icon} ${m.name}</a>`).join('');
+  const secNav = document.getElementById('aNavSections');
+  secNav.innerHTML = SECTIONS.map(s=>`<a href="#" onclick="go('sec:${encodeURIComponent(s)}');return false;">🏷️ ${s}</a>`).join('');
+  document.getElementById('secCount').textContent = SECTIONS.length;
+}
+function toggleSectionGroup(){
+  document.getElementById('aNavSections').classList.toggle('open');
+}
+function toggleSidebar(){ document.getElementById('aSidebar').classList.toggle('open'); }
+
+function go(page){
+  document.querySelectorAll('#aSidebar .navA').forEach(a=>a.classList.toggle('active', a.dataset.page===page));
+  renderAdminPage(page);
+  document.getElementById('aSidebar').classList.remove('open');
+  window.scrollTo(0,0);
+}
+function refreshNotifBadge(){
+  const n = db('activity', []).length;
+  const b = document.getElementById('notifBadge');
+  if(b) b.textContent = Math.min(n,99);
+}
+function liveTick(){
+  const sec = SECTIONS[Math.floor(Math.random()*SECTIONS.length)];
+  const users = db('users', []);
+  const name = users.length ? users[Math.floor(Math.random()*users.length)].name : 'সিস্টেম ইউজার';
+  const statuses = ['done','done','partial','pending'];
+  const status = statuses[Math.floor(Math.random()*statuses.length)];
+  const verbs = {done:'কাজের আপডেট জমা দিয়েছেন', partial:'আংশিক আপডেট দিয়েছেন', pending:'আপডেট বাকি রয়েছে'};
+  logActivity({sec, name, status, txt:verbs[status]});
+  refreshNotifBadge();
+  const cur = document.querySelector('#aMain [data-current]');
+  if(cur && cur.dataset.current==='dashboard') renderDashboard(currentDashMode);
+  if(cur && cur.dataset.current==='bubble') drawBubble();
+  pushUserFeed();
+}
+
+let currentDashMode='exec';
+function renderAdminPage(page){
+  const main = document.getElementById('aMainContent');
+  if(page==='dashboard'){ main.innerHTML='<div data-current="dashboard"></div>'; renderDashboard(currentDashMode); return; }
+  if(page==='bubble'){ renderBubblePage(); return; }
+  if(page==='admincontrol'){ renderAdminControl(); return; }
+  if(page==='isochecklist'){ renderIsoPage(); return; }
+  if(page.startsWith('mod:')){ const idx=+page.split(':')[1]; renderModulePage(MODULES[idx]); return; }
+  if(page.startsWith('sec:')){ const name=decodeURIComponent(page.split(':')[1]); renderSectionPage(name); return; }
+  main.innerHTML = '<div class="panelCard">পেজ পাওয়া যায়নি।</div>';
+}
+
+function setDashMode(mode){
+  currentDashMode = mode;
+  renderDashboard(mode);
+}
+function renderDashboard(mode){
+  const main = document.getElementById('aMainContent');
+  const isExec = mode==='exec';
+  const activity = db('activity', []).slice(0,5);
+  const alertsHtml = activity.map(a=>`<div class="alertRow"><span>${a.name} — ${a.txt}</span><span class="time">${timeAgo(a.t)}</span></div>`).join('') ||
+    '<div class="alertRow"><span>কোনো সাম্প্রতিক সতর্কতা নেই</span></div>';
+  main.innerHTML = `
+  <div data-current="dashboard">
+  <h2 class="pageTitle">${isExec?'Executive':'HR'} Command Center</h2>
+  <div class="crumbs">Dashboard / ${isExec?'Executive Overview':'HR Overview'}</div>
+  <div class="dashToggle">
+    <button class="${isExec?'active exec':''}" onclick="setDashMode('exec')">🌹 Executive Command Center</button>
+    <button class="${!isExec?'active hr':''}" onclick="setDashMode('hr')">🌼 HR Command Center</button>
+  </div>
+  <div class="cmdCenter ${isExec?'exec':'hr'}">
+    <div class="cmdHead">
+      <div><h3>RIZVI-MANAGEMENT &nbsp;|&nbsp; ${isExec?'EXECUTIVE COMMAND CENTER':'HR COMMAND CENTER'}</h3>
+      <small>Integrated Management &amp; Business Intelligence System — RIZVI FASHIONS LTD.</small></div>
+    </div>
+    <div class="cmdGrid">
+      <div class="cmdLeft">
+        <div class="kpiRow">
+          ${isExec? kpi('মোট কর্মী','6,423','+12.5%'):kpi('মোট কর্মী','6,423','+12.5%')}
+          ${isExec? kpi('আজকের উৎপাদন','58,760 Pcs','+8.2%'):kpi('আজ উপস্থিত','5,982','93.1%')}
+          ${isExec? kpi('মাসিক রেভিনিউ','৳ ১২৮.৭৫M','+15.4%'):kpi('আজ ছুটিতে','128','2.0%')}
+          ${isExec? kpi('কমপ্লায়েন্স স্কোর','96.8%','Excellent'):kpi('নতুন যোগদান','45','+5')}
+        </div>
+        <div class="chartCard"><div class="t">Production Overview</div><canvas id="cBar" height="150"></canvas></div>
+        <div class="chartCard"><div class="t">${isExec?'Department Performance':'Attendance Trend'}</div><canvas id="cDonut" height="150"></canvas></div>
+      </div>
+      <div class="roseHero"><div class="roseGlyph">🌹</div></div>
+      <div class="cmdRight">
+        <div class="alertBox"><div class="t">${isExec?'Real-Time Alerts':'HR Alerts'}</div>${alertsHtml}</div>
+        <div class="chartCard"><div class="t">${isExec?'Monthly Revenue Trend':'Recent Joiners'}</div><canvas id="cLine" height="120"></canvas></div>
+        <div class="chartCard"><div class="t">${isExec?'Top Performing Sections':'Employee Distribution'}</div>
+          ${topSectionsHtml()}
+        </div>
+      </div>
+    </div>
+    <div class="leadPanel mt14">
+      <div class="crown">👑</div>
+      <h4>${isExec?'LEADERSHIP · VISION · PERFORMANCE · EXCELLENCE':'OUR PEOPLE · OUR STRENGTH · OUR FUTURE'}</h4>
+      <p>${isExec?'To deliver excellence through innovation, disciplined execution and people empowerment.':'Empowering people, nurturing talent and building a culture of growth and respect.'}</p>
+    </div>
+  </div>
+
+  <div class="grid g4 mt14">
+    <a class="miniCard linkCard" onclick="go('bubble')">🫧<div class="t">Live Bubble Dashboard</div><div class="n">Section-wise performance</div></a>
+    <a class="miniCard linkCard" onclick="go('admincontrol')">⚙️<div class="t">Admin Control</div><div class="n">Settings &amp; Import</div></a>
+    <a class="miniCard linkCard" onclick="go('mod:21')">📁<div class="t">Document Management</div><div class="n">All records</div></a>
+    <a class="miniCard linkCard" onclick="go('mod:22')">📊<div class="t">KPI &amp; Performance</div><div class="n">Green / Yellow / Red</div></a>
+  </div>
+  </div>`;
+  drawDashboardCharts(isExec);
+}
+function kpi(lbl,num,delta){
+  return `<div class="kpiCard"><div class="lbl">${lbl}</div><div class="num">${num}</div><div class="delta">${delta}</div></div>`;
+}
+function topSectionsHtml(){
+  const list = SECTIONS.slice(0,4).map((s,i)=>{
+    const pct = [89,84,82,79][i]||70;
+    const color = pct>=85?'var(--green)':pct>=60?'var(--yellow)':'var(--danger)';
+    return `<div class="topSecRow"><span>${s}</span><span class="pct" style="color:${color}">${pct}%</span></div>
+    <div class="progBar"><i style="width:${pct}%;background:${color}"></i></div>`;
+  }).join('');
+  return list;
+}
+function drawDashboardCharts(isExec){
+  const days = ['শনি','রবি','সোম','মঙ্গল','বুধ','বৃহঃ','শুক্র'];
+  if(window._cBar) window._cBar.destroy();
+  const bctx = document.getElementById('cBar');
+  if(bctx) window._cBar = new Chart(bctx,{type:'bar',data:{labels:days,
+    datasets:[{label:'Target',data:[80,82,85,86,88,90,92],backgroundColor:'#3a2a2a'},
+    {label:'Actual',data:[72,76,80,82,83,86,89],backgroundColor:'#d4af37'}]},
+    options:{plugins:{legend:{labels:{color:'#a79c8c'}}},scales:{x:{ticks:{color:'#a79c8c'},grid:{color:'#221d28'}},y:{ticks:{color:'#a79c8c'},grid:{color:'#221d28'}}}}});
+  if(window._cDonut) window._cDonut.destroy();
+  const dctx = document.getElementById('cDonut');
+  if(dctx){
+    if(isExec){
+      window._cDonut = new Chart(dctx,{type:'doughnut',data:{labels:['Production','Quality','Maintenance','HR & Admin','Compliance','Others'],
+        datasets:[{data:[45,15,10,10,10,10],backgroundColor:['#b91c1c','#d4af37','#3b82f6','#22c55e','#a855f7','#64748b']}]},
+        options:{plugins:{legend:{position:'right',labels:{color:'#a79c8c',boxWidth:10,font:{size:10}}}}}});
+    } else {
+      window._cDonut = new Chart(dctx,{type:'line',data:{labels:days,
+        datasets:[{label:'This Month',data:[88,85,90,92,93,91,91],borderColor:'#d4af37',tension:.3},
+        {label:'Last Month',data:[72,70,76,80,82,78,83],borderColor:'#6b5a20',borderDash:[4,4],tension:.3}]},
+        options:{plugins:{legend:{labels:{color:'#a79c8c'}}},scales:{x:{ticks:{color:'#a79c8c'},grid:{color:'#221d28'}},y:{ticks:{color:'#a79c8c'},grid:{color:'#221d28'}}}}});
+    }
+  }
+  if(window._cLine) window._cLine.destroy();
+  const lctx = document.getElementById('cLine');
+  if(lctx && isExec){
+    window._cLine = new Chart(lctx,{type:'line',data:{labels:['Feb','Mar','Apr','May','Jun','Jul','Aug'],
+      datasets:[{data:[60,75,68,90,85,100,128],borderColor:'#ff6b6b',backgroundColor:'rgba(185,28,28,.15)',fill:true,tension:.35}]},
+      options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#a79c8c'},grid:{display:false}},y:{ticks:{color:'#a79c8c'},grid:{color:'#221d28'}}}}});
+  } else if(lctx){
+    lctx.parentElement.innerHTML = '<div class="t">Recent Joiners</div>'+
+      ['Ayesha Akter — HR Officer','Rafiq Hasan — Line Supervisor','Mizanur Rahman — QA Inspector','Jannatul Ferdous — Compliance Officer']
+      .map(x=>`<div class="alertRow"><span>${x}</span></div>`).join('');
+  }
+}
+
+/* ---- Bubble dashboard ---- */
+let bubbleChart;
+function renderBubblePage(){
+  document.getElementById('aMainContent').innerHTML = `
+  <div data-current="bubble">
+  <h2 class="pageTitle">🫧 Live Bubble Dashboard</h2>
+  <div class="crumbs">Reports &amp; Analytics / Live Bubble Dashboard</div>
+  <div class="bubbleWrap">
+    <canvas id="bubbleCanvas" height="110"></canvas>
+    <p class="smallMuted mt8">বাবল সাইজ = কর্মী সংখ্যা, X-অক্ষ = টার্গেট%, Y-অক্ষ = অর্জিত% (প্রতি ৬ সেকেন্ডে লাইভ আপডেট)</p>
+  </div>
+  </div>`;
+  drawBubble();
+}
+function drawBubble(){
+  const ctx = document.getElementById('bubbleCanvas');
+  if(!ctx) return;
+  const data = SECTIONS.map(s=>{
+    const target = 70+Math.random()*25;
+    const achieved = target - 15 + Math.random()*30;
+    return {x:Math.round(target), y:Math.round(Math.max(0,Math.min(100,achieved))), r:6+Math.random()*14, label:s};
+  });
+  if(bubbleChart) bubbleChart.destroy();
+  bubbleChart = new Chart(ctx,{type:'bubble',data:{datasets:[{
+    label:'Sections', data,
+    backgroundColor: data.map(d=> d.y>=85?'rgba(34,197,94,.55)': d.y>=60?'rgba(234,179,8,.55)':'rgba(239,68,68,.55)')
+  }]}, options:{plugins:{legend:{display:false},
+    tooltip:{callbacks:{label:(c)=> c.raw.label+': target '+c.raw.x+'%, achieved '+c.raw.y+'%'}}},
+    scales:{x:{title:{display:true,text:'Target %',color:'#a79c8c'},min:0,max:100,ticks:{color:'#a79c8c'},grid:{color:'#221d28'}},
+    y:{title:{display:true,text:'Achieved %',color:'#a79c8c'},min:0,max:100,ticks:{color:'#a79c8c'},grid:{color:'#221d28'}}}}});
+}
+
+/* ---- Generic module / section pages ---- */
+function evalColor(pct){ return pct>=85?'green':pct>=60?'yellow':'red'; }
+function renderModulePage(mod){
+  const modIdx = MODULES.indexOf(mod);
+  const rows = SECTIONS.slice(0,10).map(s=>{
+    const pct = 55+Math.floor(Math.random()*45);
+    return {s, pct};
+  });
+  document.getElementById('aMainContent').innerHTML = `
+  <h2 class="pageTitle">${mod.icon} ${mod.name}</h2>
+  <div class="crumbs">Operational Management / ${mod.name}</div>
+  <div class="btnrow">
+    <button class="util" onclick="openImportModal('${mod.name.replace(/'/g,"")}')">📥 Import Data</button>
+    <button class="util" onclick="toast('নতুন এন্ট্রি ফর্ম শীঘ্রই যুক্ত হবে')">➕ Add Entry</button>
+    <button class="util" onclick="go('isochecklist'); setTimeout(()=>{document.getElementById('iso_mod').value='${modIdx}'; isoRefresh();},0)">📋 ISO Checklist</button>
+    <button class="ghost" onclick="go('admincontrol')">⚙️ Settings</button>
+  </div>
+  <div class="panelCard mt14">
+    <table><thead><tr><th>Section</th><th>Daily</th><th>Weekly</th><th>Monthly</th><th>Status</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td>${r.s}</td><td>${r.pct}%</td><td>${Math.max(0,r.pct-4)}%</td><td>${Math.max(0,r.pct-8)}%</td>
+      <td><span class="pill ${evalColor(r.pct)}">${evalColor(r.pct)==='green'?'ভালো':evalColor(r.pct)==='yellow'?'মাঝারি':'ঝুঁকিপূর্ণ'}</span></td></tr>`).join('')}</tbody></table>
+  </div>`;
+}
+function renderSectionPage(name){
+  const emps = db('employees', []).filter(e=>e.section===name);
+  document.getElementById('aMainContent').innerHTML = `
+  <h2 class="pageTitle">🏷️ ${name}</h2>
+  <div class="crumbs">All Sections / ${name}</div>
+  <div class="btnrow">
+    <button class="util" onclick="openImportModal('${name}')">📥 Import Employee List</button>
+    <button class="ghost" onclick="go('admincontrol')">⚙️ Settings</button>
+  </div>
+  <div class="panelCard mt14">
+    ${emps.length? `<table><thead><tr><th>ID</th><th>Name</th><th>Designation</th><th>Status</th></tr></thead>
+    <tbody>${emps.map(e=>`<tr><td>${e.eid}</td><td>${e.name}</td><td>${e.desig}</td><td><span class="pill green">Active</span></td></tr>`).join('')}</tbody></table>`
+    : `<p class="smallMuted">এখনো কোনো এমপ্লয়ি ডাটা ইমপোর্ট করা হয়নি। উপরের "Import Employee List" বাটন ব্যবহার করে Master Employee Sheet আপলোড করুন।</p>`}
+  </div>`;
+}
+
+/* ---- ISO Checklist (Main Sidebar × Section × Designation) ---- */
+function isoKey(modIdx, sec, desig){ return modIdx+'__'+(sec||'-')+'__'+(desig||'-'); }
+function isoState(){ return db('isoChecklist', {}); }
+function setIsoState(all){ setDb('isoChecklist', all); }
+function renderIsoPage(sel){
+  sel = sel || {mod:0, sec:SECTIONS[0], desig:''};
+  const modOpts = MODULES.map((m,i)=>`<option value="${i}" ${+sel.mod===i?'selected':''}>${m.icon} ${m.name}</option>`).join('');
+  const secOpts = SECTIONS.map(s=>`<option ${sel.sec===s?'selected':''}>${s}</option>`).join('');
+  const desigOpts = '<option value="">— সকল পদবি (General) —</option>' + DESIGNATIONS.map(d=>`<option ${sel.desig===d?'selected':''}>${d}</option>`).join('');
+  const key = isoKey(sel.mod, sel.sec, sel.desig);
+  const state = isoState();
+  const checks = state[key] || {};
+  const total = ISO_BASE.length;
+  const doneCount = ISO_BASE.filter(c=>checks[c.clause]).length;
+  const pct = Math.round((doneCount/total)*100);
+  const color = evalColor(pct);
+  document.getElementById('aMainContent').innerHTML = `
+  <h2 class="pageTitle">📋 ISO কমপ্লায়েন্স চেকলিস্ট</h2>
+  <div class="crumbs">Integrated ISO Management System / Main Sidebar × Section × Designation ভিত্তিক চেকলিস্ট</div>
+  <div class="panelCard">
+    <div class="grid g3">
+      <div><label class="smallMuted">Main Sidebar Module</label><select id="iso_mod" onchange="isoRefresh()">${modOpts}</select></div>
+      <div><label class="smallMuted">Section</label><select id="iso_sec" onchange="isoRefresh()">${secOpts}</select></div>
+      <div><label class="smallMuted">Designation</label><select id="iso_desig" onchange="isoRefresh()">${desigOpts}</select></div>
+    </div>
+    <div class="flexBetween mt14">
+      <div><b>কমপ্লায়েন্স স্কোর:</b> <span class="pill ${color}">${pct}% (${doneCount}/${total})</span></div>
+      <div class="btnrow" style="margin:0;">
+        <button class="util" onclick="isoMarkAll(true)">✅ সব সম্পন্ন করুন</button>
+        <button class="ghost" onclick="isoMarkAll(false)">↺ রিসেট করুন</button>
+        <button class="util" onclick="isoExport()">🖨️ প্রিন্ট / এক্সপোর্ট</button>
+      </div>
+    </div>
+    <div class="progBar mt8"><i style="width:${pct}%;background:${color==='green'?'var(--green)':color==='yellow'?'var(--yellow)':'var(--danger)'}"></i></div>
+  </div>
+  <div class="panelCard mt14" id="isoListWrap">
+    <table><thead><tr><th style="width:60px;">Clause</th><th>ISO চেকলিস্ট আইটেম</th><th style="width:90px;">স্ট্যাটাস</th></tr></thead>
+    <tbody id="isoRows">${isoRowsHtml(sel, checks)}</tbody></table>
+  </div>
+  <p class="smallMuted mt8">প্রতিটি Main Sidebar মডিউল (৪৪টি) × প্রতিটি Section (৩০টি) × প্রতিটি Designation (১৯৬টি) — এর জন্য আলাদাভাবে এই চেকলিস্ট প্রয়োগ ও সংরক্ষণ করা যায়। উপরের ড্রপডাউন পরিবর্তন করে অন্য কম্বিনেশন দেখুন।</p>`;
+}
+function isoRowsHtml(sel, checks){
+  return ISO_BASE.map(c=>`<tr>
+    <td><b>${c.clause}</b></td>
+    <td>${c.item} <span class="smallMuted">— প্রযোজ্য: ${MODULES[sel.mod].name}${sel.desig? ' / '+sel.desig:''}</span></td>
+    <td><label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+      <input type="checkbox" style="width:auto;margin:0;" ${checks[c.clause]?'checked':''} onchange="isoToggle('${c.clause}', this.checked)"> ${checks[c.clause]?'✅':'⬜'}
+    </label></td>
+  </tr>`).join('');
+}
+function isoCurrentSel(){
+  return {
+    mod: +document.getElementById('iso_mod').value,
+    sec: document.getElementById('iso_sec').value,
+    desig: document.getElementById('iso_desig').value
+  };
+}
+function isoRefresh(){ renderIsoPage(isoCurrentSel()); }
+function isoToggle(clause, val){
+  const sel = isoCurrentSel();
+  const key = isoKey(sel.mod, sel.sec, sel.desig);
+  const state = isoState();
+  state[key] = state[key] || {};
+  state[key][clause] = val;
+  setIsoState(state);
+  fsSet('isoChecklist', key, Object.assign({key}, state[key], {updatedAt:Date.now(), updatedBy:(session()&&session().name)||'Admin'}));
+  renderIsoPage(sel);
+}
+function isoMarkAll(val){
+  const sel = isoCurrentSel();
+  const key = isoKey(sel.mod, sel.sec, sel.desig);
+  const state = isoState();
+  const rec = {};
+  ISO_BASE.forEach(c=> rec[c.clause]=val);
+  state[key] = rec;
+  setIsoState(state);
+  fsSet('isoChecklist', key, Object.assign({key}, rec, {updatedAt:Date.now(), updatedBy:(session()&&session().name)||'Admin'}));
+  logActivity({sec:sel.sec, name:(session()&&session().name)||'Admin', status: val?'done':'pending', txt:'ISO চেকলিস্ট '+(val?'সম্পন্ন':'রিসেট')+' করা হয়েছে — '+MODULES[sel.mod].name});
+  renderIsoPage(sel);
+  toast(val? '✅ সব আইটেম সম্পন্ন হিসেবে চিহ্নিত হয়েছে':'রিসেট করা হয়েছে');
+}
+function isoExport(){ window.print(); }
+
+/* ---- Admin Control Panel ---- */
+function renderAdminControl(){
+  const users = db('users', []);
+  const emps = db('employees', []);
+  const activity = db('activity', []);
+  const trash = db('trash', []);
+  document.getElementById('aMainContent').innerHTML = `
+  <h2 class="pageTitle">⚙️ Admin Control Panel</h2>
+  <div class="crumbs">System Administration / Settings</div>
+  <div class="grid g4">
+    <div class="panelCard kpi"><div class="num">${users.length}</div><div class="lbl">Active Users</div></div>
+    <div class="panelCard kpi"><div class="num">${emps.length}</div><div class="lbl">Employees Imported</div></div>
+    <div class="panelCard kpi"><div class="num">${activity.length}</div><div class="lbl">Activity Events</div></div>
+    <div class="panelCard kpi"><div class="num">${trash.length}</div><div class="lbl">In Recycle Bin</div></div>
+  </div>
+
+  <div class="panelCard mt14">
+    <h3 style="margin-top:0;">📄 মাস্টার ইমপ্লয়ি শীট ইমপোর্ট</h3>
+    <p class="smallMuted">CSV ফরম্যাট: EmployeeID,Name,Designation,Section,Department — একসাথে হাজার হাজার সারি আপলোড করা যাবে।</p>
+    <input type="file" id="masterCsv" accept=".csv" />
+    <div id="csvPreview" class="smallMuted mt8"></div>
+    <button class="primary mt8" style="width:auto;padding:10px 20px;" onclick="importMasterCsv()">⬆️ ইমপোর্ট শুরু করুন</button>
+  </div>
+
+  <div class="panelCard mt14">
+    <h3 style="margin-top:0;">👥 ইউজার ও এমপ্লয়ি ব্যবস্থাপনা</h3>
+    <table><thead><tr><th>ID</th><th>Name</th><th>Department</th><th>Designation</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>${users.map(u=>`<tr><td>${u.id}</td><td>${u.name}</td><td>${u.dept||'-'}</td><td>${u.desig||'-'}</td>
+      <td><span class="pill ${u.status==='active'?'green':'red'}">${u.status}</span></td>
+      <td><button class="ghost" onclick="toggleUser('${u.id}')">${u.status==='active'?'নিষ্ক্রিয় করুন':'সক্রিয় করুন'}</button>
+      <button class="ghost" onclick="deleteUser('${u.id}')">🗑️ মুছুন</button></td></tr>`).join('') || '<tr><td colspan="6" class="smallMuted">এখনো কোনো ইউজার সাইন-আপ করেননি।</td></tr>'}</tbody></table>
+  </div>
+
+  <div class="panelCard mt14">
+    <h3 style="margin-top:0;">🧩 পেজ কনফিগারেশন</h3>
+    <p class="smallMuted">যেকোনো মডিউল সাইডবার থেকে সাময়িকভাবে লুকিয়ে রাখুন।</p>
+    <div class="smallGrid">${MODULES.slice(0,12).map((m,i)=>`<label style="display:flex;align-items:center;gap:8px;background:var(--panel2);
+      border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:12px;cursor:pointer;">
+      <input type="checkbox" checked style="width:auto;margin:0;" onchange="toast('${m.name} — সেভ হয়েছে')"> ${m.icon} ${m.name}</label>`).join('')}</div>
+  </div>
+
+  <div class="panelCard mt14">
+    <h3 style="margin-top:0;">♻️ বাতিল ও পুনরুদ্ধার</h3>
+    ${trash.length? trash.map(t=>`<div class="alertRow"><span>${t.name}</span><button class="ghost" onclick="restoreItem(${t.id})">পুনরুদ্ধার</button></div>`).join('')
+      : '<p class="smallMuted">রিসাইকেল বিন খালি আছে।</p>'}
+  </div>
+
+  <div class="panelCard mt14">
+    <h3 style="margin-top:0;">🕒 সাম্প্রতিক এক্টিভিটি লগ</h3>
+    <table><thead><tr><th>নাম</th><th>সেকশন</th><th>বিস্তারিত</th><th>সময়</th></tr></thead>
+    <tbody>${activity.slice(0,15).map(a=>`<tr><td>${a.name}</td><td>${a.sec}</td><td>${a.txt}</td><td>${timeAgo(a.t)}</td></tr>`).join('')}</tbody></table>
+  </div>`;
+}
+function toggleUser(id){
+  const users = db('users', []);
+  const u = users.find(x=>x.id===id);
+  if(u){ u.status = u.status==='active'?'inactive':'active'; setDb('users', users); fsSet('users', u.uid||u.id, u); renderAdminControl(); toast('স্ট্যাটাস আপডেট হয়েছে'); }
+}
+function deleteUser(id){
+  let users = db('users', []);
+  const u = users.find(x=>x.id===id);
+  users = users.filter(x=>x.id!==id);
+  setDb('users', users);
+  if(u) fsDelete('users', u.uid||u.id);
+  const trash = db('trash', []);
+  const trashRec = {id:Date.now(), name:'User: '+(u? u.name:id), data:u};
+  trash.unshift(trashRec);
+  setDb('trash', trash);
+  fsSet('trash', trashRec.id, trashRec);
+  renderAdminControl();
+  toast('ইউজার মুছে ফেলা হয়েছে (রিসাইকেল বিনে সংরক্ষিত)');
+}
+function restoreItem(id){
+  let trash = db('trash', []);
+  const item = trash.find(t=>t.id===id);
+  trash = trash.filter(t=>t.id!==id);
+  setDb('trash', trash);
+  fsDelete('trash', id);
+  if(item && item.data){ const users = db('users', []); users.push(item.data); setDb('users', users); fsSet('users', item.data.uid||item.data.id, item.data); }
+  renderAdminControl();
+  toast('পুনরুদ্ধার সম্পন্ন হয়েছে');
+}
+function importMasterCsv(){
+  const input = document.getElementById('masterCsv');
+  if(!input.files.length){ toast('একটি CSV ফাইল নির্বাচন করুন'); return; }
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const lines = e.target.result.split(/\r?\n/).filter(l=>l.trim());
+    const emps = db('employees', []);
+    let added=0;
+    lines.forEach((line,i)=>{
+      if(i===0 && /id/i.test(line)) return;
+      const parts = line.split(',');
+      if(parts.length>=2){
+        emps.push({eid:parts[0]?.trim()||('E'+Date.now()+i), name:parts[1]?.trim()||'Unknown',
+          desig:parts[2]?.trim()||'', section:parts[3]?.trim()||'Others', dept:parts[4]?.trim()||''});
+        added++;
+      }
+    });
+    setDb('employees', emps);
+    logActivity({sec:'System', name:'Admin', status:'done', txt: added+' জন এমপ্লয়ি ইমপোর্ট করা হয়েছে'});
+    document.getElementById('csvPreview').textContent = added+' টি সারি সফলভাবে ইমপোর্ট হয়েছে ✅';
+    if(useFirebase){
+      if(added>18000){
+        document.getElementById('csvPreview').textContent += ' — ⚠️ Firebase ফ্রি (Spark) প্ল্যানে দিনে ~২০,০০০ রাইট লিমিট আছে; এত বড় ফাইলের জন্য কয়েক দিনে ভাগ করে ইমপোর্ট করুন অথবা Blaze প্ল্যানে যান।';
+      }
+      const toSync = emps.slice(-added);
+      let i=0;
+      function nextBatch(){
+        const batch = fbDb.batch();
+        const chunk = toSync.slice(i, i+450);
+        if(!chunk.length) return;
+        chunk.forEach(emp=> batch.set(fbDb.collection('employees').doc(String(emp.eid)), emp, {merge:true}));
+        batch.commit().then(()=>{ i+=450; if(i<toSync.length) nextBatch(); }).catch(e=>console.warn('batch import failed', e));
+      }
+      nextBatch();
+    }
+    toast('মাস্টার শীট ইমপোর্ট সম্পন্ন');
+    renderAdminControl();
+  };
+  reader.readAsText(file);
+}
+function openImportModal(ctx){
+  go('admincontrol');
+  toast(ctx+' — নিচের মাস্টার ইমপোর্ট ফর্ম ব্যবহার করুন');
+}
+
+function timeAgo(ts){
+  const s = Math.floor((Date.now()-ts)/1000);
+  if(s<60) return 'এইমাত্র';
+  if(s<3600) return Math.floor(s/60)+' মিনিট আগে';
+  if(s<86400) return Math.floor(s/3600)+' ঘন্টা আগে';
+  return Math.floor(s/86400)+' দিন আগে';
+}
+
+/* ============ USER APP ============ */
+function initUser(){
+  const s = session();
+  const users = db('users', []);
+  const me = users.find(u=>u.id===s.id) || {name:'রিজভী টিম', desig:'', dept:''};
+  window._me = me;
+  document.getElementById('uInitials').textContent = (me.name||'U').slice(0,1);
+  goUser('dash');
+  if(!window._userInited){
+    window._userInited=true;
+    startFirestoreSync();
+    if(!useFirebase) setInterval(()=>{ if(document.getElementById('page_dash') && !document.getElementById('page_dash').classList.contains('hidden')) renderUserDash(); }, 8000);
+  }
+}
+function greetTime(){
+  const h = new Date().getHours();
+  if(h<12) return 'শুভ সকাল';
+  if(h<17) return 'শুভ বিকাল';
+  return 'শুভ সন্ধ্যা';
+}
+function goUser(page){
+  ['dash','tasks','updates','profile'].forEach(p=>{
+    document.getElementById('page_'+p).classList.toggle('hidden', p!==page);
+    document.getElementById('nav_'+p).classList.toggle('active', p===page);
+  });
+  if(page==='dash') renderUserDash();
+  if(page==='tasks') renderUserTasks();
+  if(page==='updates') renderUserUpdates();
+  if(page==='profile') renderUserProfile();
+  window.scrollTo(0,0);
+}
+function myStats(){
+  const s = session();
+  const all = db('userUpdates', []).filter(u=>u.uid===s.id);
+  const done = all.filter(u=>u.status==='done').length;
+  const partial = all.filter(u=>u.status==='partial').length;
+  const pending = DEMO_TASKS.length - all.length + (DEMO_TASKS.length? DEMO_TASKS.length - done - partial - (all.length-done-partial):0);
+  return {done, partial, pending: Math.max(0, DEMO_TASKS.length-done-partial), total: DEMO_TASKS.length};
+}
+function renderUserDash(){
+  const me = window._me || {};
+  const stats = myStats();
+  const feed = db('activity', []).slice(0,4);
+  document.getElementById('page_dash').innerHTML = `
+    <div class="roseHeroCard">
+      <div class="bigrose">🌹</div>
+      <h2>${greetTime()}, ${me.name || 'রিজভী টিম'}</h2>
+      <div class="live"><span class="feedDot" style="background:#1f8a3c"></span> লাইভ আপডেট সক্রিয়</div>
+      <div class="lastup">🕒 শেষ আপডেট: ${feed[0]? timeAgo(feed[0].t):'কিছুক্ষণ আগে'}</div>
+    </div>
+    <div class="uStatRow">
+      <div class="uStatCard green"><div class="n">${stats.done}</div><div class="l">সম্পন্ন</div></div>
+      <div class="uStatCard yellow"><div class="n">${stats.partial}</div><div class="l">আংশিক</div></div>
+      <div class="uStatCard red"><div class="n">${stats.pending}</div><div class="l">বাকি</div></div>
+    </div>
+    <div class="feedCard">
+      ${feed.map(f=>`<div class="feedRow"><span class="feedDot" style="background:${f.status==='done'?'#1f8a3c':f.status==='partial'?'#c8961f':'#c23c3c'}"></span>
+        <span class="txt">${f.name} — ${f.txt}</span><span class="t">${timeAgo(f.t)}</span></div>`).join('')}
+    </div>
+    <div class="ctaBtn" onclick="openUpdateSheet()">
+      <div><div class="l">📝 কাজের আপডেট দিন</div><div class="s">আপনার অগ্রগতি জানাতে এখনই আপডেট দিন</div></div>
+      <div class="go">➜</div>
+    </div>
+    <div class="ctaBtn" style="background:linear-gradient(135deg,#fdeee6,#f9d3b8);border-color:#f0b98a;" onclick="openUpdateSheet(true)">
+      <div><div class="l">📣 অভিযোগ / পরামর্শ দিন</div><div class="s">Word, PDF, Excel, ছবি, ভিডিও বা অডিও যুক্ত করুন</div></div>
+      <div class="go" style="background:#f0985a;">➜</div>
+    </div>`;
+}
+function renderUserTasks(){
+  const grouped = {};
+  DEMO_TASKS.forEach(t=>{ (grouped[t.team]=grouped[t.team]||[]).push(t); });
+  const myUpdates = db('userUpdates', []).filter(u=>u.uid===session().id);
+  document.getElementById('page_tasks').innerHTML = `
+    <div class="uSearchBar">🔍&nbsp; কাজ বা টিম খুঁজুন</div>
+    <div class="uFilters"><button>📁 সব বিভাগ</button><button>📅 আজ</button><button>●●● সব স্ট্যাটাস</button></div>
+    ${Object.keys(grouped).map(team=>`
+      <div class="teamBlock">
+        <div class="teamHead"><span>👥 ${team}</span><span class="cnt">${grouped[team].length} কাজ ⌃</span></div>
+        ${grouped[team].map(t=>{
+          const found = myUpdates.find(u=>u.title===t.t);
+          const st = found? found.status : (Math.random()>0.5?'pending':'partial');
+          const label = st==='done'?'সম্পন্ন':st==='partial'?'আংশিক':'বাকি';
+          return `<div class="taskRow" onclick="openUpdateSheet(false,'${t.t.replace(/'/g,"")}')">
+            <div class="taskAvatar">${t.init}</div>
+            <div class="body"><div class="ttl">${t.t} — ${t.due}</div><div class="sub">${t.who}</div></div>
+            <span class="statusPill ${st}">${label}</span></div>`;
+        }).join('')}
+      </div>`).join('')}
+    <div class="feedCard mt14" style="text-align:center;padding:12px;">
+      <span style="color:#c8961f;font-weight:700;font-size:12.5px;cursor:pointer;" onclick="toast('সব টিম শীঘ্রই যুক্ত হবে')">সব টিম দেখুন ⌄</span>
+    </div>`;
+}
+function renderUserUpdates(){
+  const mine = db('userUpdates', []).filter(u=>u.uid===session().id).sort((a,b)=>b.t-a.t);
+  document.getElementById('page_updates').innerHTML = `
+    <h2 style="font-size:17px;">আমার আপডেট সমূহ</h2>
+    ${mine.length? mine.map(u=>`<div class="feedCard" style="padding:12px 14px;">
+      <div class="flexBetween"><b style="font-size:13px;">${u.title}</b><span class="statusPill ${u.status}">${u.status==='done'?'সম্পন্ন':u.status==='partial'?'আংশিক':'না'}</span></div>
+      <div class="smallMuted mt8">${u.note||'কোনো নোট নেই'}</div>
+      <div class="smallMuted" style="margin-top:6px;font-size:10.5px;">📎 ${u.files.length} সংযুক্তি &nbsp;•&nbsp; ${timeAgo(u.t)}</div>
+    </div>`).join('') : '<div class="feedCard" style="padding:20px;text-align:center;color:#a4966e;">এখনো কোনো আপডেট জমা দেননি।</div>'}
+    <div class="ctaBtn mt14" onclick="openUpdateSheet()"><div class="l">➕ নতুন আপডেট যোগ করুন</div><div class="go">➜</div></div>`;
+}
+function renderUserProfile(){
+  const me = window._me || {};
+  document.getElementById('page_profile').innerHTML = `
+    <div class="feedCard" style="text-align:center;padding:22px;">
+      <div class="avatar" style="width:64px;height:64px;font-size:22px;margin:0 auto 10px;">${(me.name||'U').slice(0,1)}</div>
+      <h3 style="margin:6px 0 2px;">${me.name||'—'}</h3>
+      <p class="smallMuted" style="margin:0;">${me.desig||'—'} • ${me.dept||'—'}</p>
+    </div>
+    <div class="feedCard" style="padding:14px;">
+      <label>নাম</label><input id="pf_name" value="${me.name||''}">
+      <label>আইডি (ইমেইল / মোবাইল)</label><input value="${me.id||session().id}" disabled>
+      <label>বিভাগ</label><input id="pf_dept" value="${me.dept||''}">
+      <button class="submitBtn" onclick="saveProfile()">💾 প্রোফাইল সংরক্ষণ করুন</button>
+    </div>
+    <button class="submitBtn" style="background:#f3e2e2;color:#c23c3c;margin-top:10px;" onclick="logout()">🚪 লগআউট</button>`;
+}
+function saveProfile(){
+  const users = db('users', []);
+  const u = users.find(x=>x.id===session().id);
+  if(u){ u.name=document.getElementById('pf_name').value; u.dept=document.getElementById('pf_dept').value; setDb('users', users); window._me=u; toast('প্রোফাইল সংরক্ষিত হয়েছে'); renderUserProfile(); }
+}
+function pushUserFeed(){
+  if(document.getElementById('page_dash') && !document.getElementById('page_dash').classList.contains('hidden')) renderUserDash();
+}
+
+/* ---- Update sheet (shared) ---- */
+let sheetStatus=null, sheetFiles=[], sheetIsComplaint=false;
+function openUpdateSheet(isComplaint, presetTitle){
+  sheetStatus=null; sheetFiles=[]; sheetIsComplaint = !!isComplaint;
+  document.getElementById('sheetTitle').textContent = isComplaint? 'অভিযোগ / পরামর্শ' : 'আজকের কাজের আপডেট';
+  const sel = document.getElementById('sh_task');
+  sel.innerHTML = DEMO_TASKS.map(t=>`<option ${presetTitle===t.t?'selected':''}>${t.t}</option>`).join('') + (isComplaint? '<option>সাধারণ অভিযোগ / পরামর্শ</option>':'');
+  document.getElementById('sh_note').value='';
+  document.getElementById('sh_count').textContent='0/500';
+  renderSheetFiles();
+  ['Yes','No','Partial'].forEach(k=>document.getElementById('sh_'+k).classList.remove('selYes','selNo','selPartial'));
+  document.getElementById('updateSheetMask').classList.add('show');
+}
+function closeSheet(){ document.getElementById('updateSheetMask').classList.remove('show'); }
+function pickStatus(k){
+  sheetStatus=k;
+  ['Yes','No','Partial'].forEach(x=>document.getElementById('sh_'+x).classList.remove('selYes','selNo','selPartial'));
+  document.getElementById('sh_'+k).classList.add('sel'+k);
+}
+function noteCount(){
+  const v = document.getElementById('sh_note').value;
+  document.getElementById('sh_count').textContent = v.length+'/500';
+}
+function pickFile(kind){
+  const input = document.createElement('input');
+  input.type='file';
+  if(kind==='doc') input.accept='.doc,.docx,.pdf';
+  if(kind==='xls') input.accept='.xls,.xlsx,.csv';
+  if(kind==='img') input.accept='image/*';
+  if(kind==='vid') input.accept='video/*'; 
+  if(kind==='aud') input.accept='audio/*';
+  input.onchange = ()=>{
+    if(input.files[0]) addSheetFile(input.files[0]);
+  };
+  input.click();
+}
+function addSheetFile(file){
+  const item = {name:file.name, size:(file.size/1024).toFixed(0)+' KB', pct:0, url:null};
+  sheetFiles.push(item);
+  renderSheetFiles();
+  if(useFirebase && fbStorage){
+    const uid = (session()&&(session().uid||session().id))||'anon';
+    const path = 'updates/'+uid+'/'+Date.now()+'_'+file.name;
+    const ref = fbStorage.ref().child(path);
+    const task = ref.put(file);
+    task.on('state_changed',
+      snap=>{ item.pct = Math.round((snap.bytesTransferred/snap.totalBytes)*100); renderSheetFiles(); },
+      err=>{ console.warn('Storage upload failed', err); toast('আপলোড ব্যর্থ হয়েছে: '+file.name); },
+      ()=>{ task.snapshot.ref.getDownloadURL().then(url=>{ item.url=url; item.pct=100; renderSheetFiles(); }); }
+    );
+  } else {
+    const timer = setInterval(()=>{
+      item.pct = Math.min(100, item.pct+25);
+      renderSheetFiles();
+      if(item.pct>=100) clearInterval(timer);
+    }, 180);
+  }
+}
+function renderSheetFiles(){
+  const wrap = document.getElementById('sh_files');
+  wrap.innerHTML = sheetFiles.map((f,i)=>`<div class="fileRow">
+    <span>📄</span>
+    <div class="fname">${f.name}<div class="miniProg"><i style="width:${f.pct}%"></i></div></div>
+    <span class="fsize">${f.size}</span>
+    <span>${f.pct>=100?'✅':f.pct+'%'}</span>
+    <button class="linkish" onclick="removeSheetFile(${i})">✕</button>
+  </div>`).join('');
+}
+function removeSheetFile(i){ sheetFiles.splice(i,1); renderSheetFiles(); }
+function submitSheet(){
+  if(!sheetStatus){ toast('অনুগ্রহ করে হ্যাঁ / না / আংশিক নির্বাচন করুন'); return; }
+  const title = document.getElementById('sh_task').value;
+  const note = document.getElementById('sh_note').value;
+  const stMap = {Yes:'done', No:'pending', Partial:'partial'};
+  const uid = (session()&&(session().uid||session().id))||'anon';
+  const rec = {id:Date.now()+'_'+Math.random().toString(36).slice(2,7), uid, title, status:stMap[sheetStatus], note,
+    files:sheetFiles.map(f=>({name:f.name, size:f.size, url:f.url||null})), t:Date.now(), complaint:sheetIsComplaint};
+  const all = db('userUpdates', []); all.unshift(rec); setDb('userUpdates', all);
+  fsSet('userUpdates', rec.id, rec);
+  const me = window._me||{};
+  logActivity({sec:me.dept||'Others', name:me.name||'ইউজার', status:rec.status, txt: (sheetIsComplaint?'অভিযোগ/পরামর্শ জমা দিয়েছেন — ':'আপডেট জমা দিয়েছেন — ')+title});
+  closeSheet();
+  toast('✅ আপডেট সফলভাবে জমা হয়েছে!'+(useFirebase?' (সব ডিভাইসে সিঙ্ক হচ্ছে)':''));
+  goUser('dash');
+}
+
+/* ============ INIT ============ */
+window.addEventListener('DOMContentLoaded', boot);
+
+</script>
+</body>
+</html>
