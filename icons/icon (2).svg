@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs><radialGradient id="g" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffd700"/><stop offset="60%" stop-color="#ffa500"/><stop offset="100%" stop-color="#ff4500"/></radialGradient></defs>
+<rect width="512" height="512" fill="#fff3c4"/>
+<circle cx="256" cy="256" r="240" fill="url(#g)"/>
+<g transform="translate(256 256)">
+<ellipse cx="0" cy="-110" rx="100" ry="55" fill="#ffd700" stroke="#b8860b" stroke-width="3"/>
+<ellipse cx="0" cy="-110" rx="100" ry="55" fill="#ffe066" stroke="#b8860b" stroke-width="3" transform="rotate(45)"/>
+<ellipse cx="0" cy="-110" rx="100" ry="55" fill="#ffd700" stroke="#b8860b" stroke-width="3" transform="rotate(90)"/>
+<ellipse cx="0" cy="-110" rx="100" ry="55" fill="#ffe066" stroke="#b8860b" stroke-width="3" transform="rotate(135)"/>
+<ellipse cx="0" cy="-110" rx="100" ry="55" fill="#ffd700" stroke="#b8860b" stroke-width="3" transform="rotate(180)"/>
+<ellipse cx="0" cy="-110" rx="100" ry="55" fill="#ffe066" stroke="#b8860b" stroke-width="3" transform="rotate(225)"/>
+<ellipse cx="0" cy="-110" rx="100" ry="55" fill="#ffd700" stroke="#b8860b" stroke-width="3" transform="rotate(270)"/>
+<ellipse cx="0" cy="-110" rx="100" ry="55" fill="#ffe066" stroke="#b8860b" stroke-width="3" transform="rotate(315)"/>
+<circle r="50" fill="#8b4513"/>
+<text x="0" y="220" text-anchor="middle" font-size="68" font-family="Arial Black" fill="#b8860b" font-weight="900">RIZVI</text>
+</g></svg>

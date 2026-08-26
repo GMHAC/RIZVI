@@ -1,0 +1,125 @@
+RIZVI FAMILY IMPMS — FIREBASE HOSTING READY
+
+Firebase project:
+  rizvifashionsfirebasestorageap
+
+DEPLOYMENT
+==========
+
+1. Install Node.js (LTS) on your Windows/Mac/Linux computer.
+
+2. Open Terminal / PowerShell in this folder.
+
+3. Install Firebase CLI:
+   npm install -g firebase-tools
+
+4. Sign in to the Google account that has permission to the Firebase project:
+   firebase login
+
+5. Confirm the active project:
+   firebase use
+
+   If necessary:
+   firebase use rizvifashionsfirebasestorageap
+
+6. Test locally:
+   firebase serve
+
+   Or:
+   firebase emulators:start --only hosting
+
+7. Deploy:
+   firebase deploy --only hosting
+
+8. After deployment, Firebase Hosting will show the live URL.
+   The default URL is normally:
+   https://rizvifashionsfirebasestorageap.web.app
+   and/or
+   https://rizvifashionsfirebasestorageap.firebaseapp.com
+
+   Do not assume the URL is live until the CLI reports a successful deployment.
+
+IMPORTANT
+=========
+
+- index.html is directly in the project root.
+- firebase.json is directly in the project root.
+- .firebaserc is directly in the project root.
+- This package is intended for Firebase Hosting static/SPA deployment.
+- The rewrite sends unknown application routes to /index.html.
+- Firebase Hosting automatically provides HTTPS/SSL for Hosting domains.
+- Firebase Hosting is hosting only; it does not replace your Firestore,
+  Authentication, Storage, or any server-side biometric gateway.
+
+SPA ROUTING
+==========
+
+firebase.json contains:
+
+  "rewrites": [
+    {
+      "source": "**",
+      "destination": "/index.html"
+    }
+  ]
+
+This is appropriate for a client-side single-page application. Static
+files that actually exist are served normally; unmatched application
+routes fall back to index.html.
+
+FIREBASE SERVICES
+=================
+
+Your browser application can continue using the Firebase configuration
+already present in firebase.js.
+
+For Firebase Storage uploads, publish the appropriate Storage Rules in
+the Firebase Console before production use.
+
+For Firestore, publish the appropriate Firestore Rules before production.
+
+PUNCH MACHINES
+==============
+
+The 7700 punch-machine communication must be handled by a server-side
+gateway/agent on the same reachable network as the machines. A public
+browser hosted on Firebase Hosting cannot safely or reliably act as a
+LAN biometric polling server.
+
+WEBINTOAPP
+==========
+
+Use the deployed Firebase Hosting URL as the WebIntoApp website URL.
+
+Example:
+  https://rizvifashionsfirebasestorageap.web.app
+
+Camera/microphone recording inside WebIntoApp requires the Android
+wrapper to grant camera and microphone permissions.
+
+SECURITY
+========
+
+Never place Firebase service-account private keys in this website.
+The browser Firebase config is intended for client use, while privileged
+server credentials must remain server-side.
+
+TROUBLESHOOTING
+===============
+
+If Firebase says "Permission denied":
+- Check the Google account used by `firebase login`.
+- Confirm that account has access to the Firebase project.
+- Run: firebase projects:list
+- Run: firebase use rizvifashionsfirebasestorageap
+
+If a page URL gives 404:
+- Verify firebase.json is in the same directory as index.html.
+- Verify the rewrite configuration.
+- Redeploy with:
+  firebase deploy --only hosting
+
+If the site loads but data does not:
+- Check Firebase Authentication, Firestore and Storage configuration.
+- Check browser Developer Tools > Console.
+- Check Firestore/Storage security rules.

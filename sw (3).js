@@ -1,0 +1,1 @@
+const C='rizvi-heavy-v3';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.add('index.html'))));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(x=>x||fetch(e.request).then(r=>{const c=r.clone();caches.open(C).then(k=>k.put(e.request,c));return r}).catch(()=>caches.match('index.html'))))});

@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() {
+      return isSignedIn() &&
+        request.auth.token.email in ['ssheraji@gmail.com'];
+      // Keep this list in sync with RIZVI_ADMIN_EMAILS in rizvi-data.js
+    }
+
+    // Sensitive collections: only Admin can write. Signed-in users can read
+    // (tighten further to per-employee reads once employee accounts use
+    // Firebase Auth UIDs matched to their employee_id).
+    match /rizvi_employees/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /rizvi_salary_data/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /rizvi_payroll/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /rizvi_custom_fields/{doc} {
+      // Signup requests: anyone signed in can create their own, only admin can approve/edit others
+      allow create: if isSignedIn();
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Everything else: signed-in users can read/write (complaints, training,
+    // attendance, inventory, etc.) — tighten per-collection as needed.
+    match /{document=**} {
+      allow read, write: if isSignedIn();
+    }
+  }
+}

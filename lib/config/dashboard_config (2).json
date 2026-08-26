@@ -1,0 +1,793 @@
+{
+  "version": "2.0",
+  "organization": "RIZVI FASHIONS LTD",
+  "sync_mode": "api_config_driven",
+  "dashboards": [
+    {
+      "id": "executive",
+      "title": "RIZVI-MANAGEMENT | EXECUTIVE COMMAND CENTER",
+      "department": "EXECUTIVE MANAGEMENT",
+      "subtitle": "Enterprise-wide visibility • Performance • Risk • People • Operations",
+      "theme": "rose_red",
+      "widgets": [
+        {
+          "id": "emp",
+          "type": "kpi",
+          "title": "Total Workforce",
+          "value": "6,400",
+          "unit": "Employees"
+        },
+        {
+          "id": "lines",
+          "type": "kpi",
+          "title": "Production Lines",
+          "value": "94",
+          "unit": "Active lines"
+        },
+        {
+          "id": "prod",
+          "type": "progress",
+          "title": "Production Target Achievement",
+          "value": "86"
+        },
+        {
+          "id": "risk",
+          "type": "kpi",
+          "title": "Critical Risk Items",
+          "value": "07",
+          "unit": "Open"
+        },
+        {
+          "id": "dept",
+          "type": "list",
+          "title": "Management Priority Areas",
+          "data": [
+            "Productivity & overtime control",
+            "Procurement governance",
+            "Quality improvement",
+            "Security & asset protection",
+            "Talent & succession",
+            "Compliance readiness"
+          ]
+        },
+        {
+          "id": "trend",
+          "type": "bar",
+          "title": "Department Performance Index",
+          "data": [
+            {
+              "label": "HR",
+              "value": 88
+            },
+            {
+              "label": "Production",
+              "value": 84
+            },
+            {
+              "label": "Quality",
+              "value": 82
+            },
+            {
+              "label": "Compliance",
+              "value": 91
+            },
+            {
+              "label": "Security",
+              "value": 94
+            }
+          ]
+        },
+        {
+          "id": "alert",
+          "type": "alert",
+          "title": "Executive Attention Required",
+          "status": "Review departments below target and high-risk exceptions."
+        },
+        {
+          "id": "timeline",
+          "type": "timeline",
+          "title": "Today’s Executive Rhythm",
+          "data": [
+            "08:30 • KPI review",
+            "11:00 • Operational exception review",
+            "14:00 • Cost & procurement review",
+            "17:00 • Compliance / security closeout"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hr",
+      "title": "RIZVI-MANAGEMENT | HR COMMAND CENTER",
+      "department": "HR",
+      "subtitle": "People • Attendance • Payroll • Talent • Performance • Training",
+      "theme": "rose_yellow",
+      "widgets": [
+        {
+          "id": "headcount",
+          "type": "kpi",
+          "title": "Active Employees",
+          "value": "6,400",
+          "unit": "Current master"
+        },
+        {
+          "id": "attendance",
+          "type": "progress",
+          "title": "Attendance Health",
+          "value": "92"
+        },
+        {
+          "id": "payroll",
+          "type": "kpi",
+          "title": "Payroll Readiness",
+          "value": "98%",
+          "unit": "Validated"
+        },
+        {
+          "id": "talent",
+          "type": "kpi",
+          "title": "Critical Talent Pool",
+          "value": "126",
+          "unit": "Identified"
+        },
+        {
+          "id": "hrmodules",
+          "type": "list",
+          "title": "HR Management Modules",
+          "data": [
+            "Employee Master",
+            "Attendance & Leave",
+            "Payroll & Benefits",
+            "Performance & KPI",
+            "Talent Management",
+            "Training & Development",
+            "Disciplinary & Grievance",
+            "HR Compliance"
+          ]
+        },
+        {
+          "id": "performance",
+          "type": "bar",
+          "title": "HR KPI Health",
+          "data": [
+            {
+              "label": "Attendance",
+              "value": 92
+            },
+            {
+              "label": "Payroll",
+              "value": 98
+            },
+            {
+              "label": "Training",
+              "value": 84
+            },
+            {
+              "label": "Performance",
+              "value": 89
+            },
+            {
+              "label": "Retention",
+              "value": 87
+            }
+          ]
+        },
+        {
+          "id": "hralert",
+          "type": "alert",
+          "title": "HR Exception Monitor",
+          "status": "Automatically surface attendance, payroll, turnover and KPI exceptions."
+        },
+        {
+          "id": "hrtimeline",
+          "type": "timeline",
+          "title": "HR Daily Control Cycle",
+          "data": [
+            "Attendance validation",
+            "Late/absence exception review",
+            "Payroll change audit",
+            "Talent / manpower review",
+            "Daily HR dashboard close"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "title": "SECURITY OPERATIONS CENTER",
+      "department": "SECURITY",
+      "subtitle": "Gate control • Guards • Visitors • Patrol • Incidents • Assets",
+      "theme": "safety",
+      "widgets": [
+        {
+          "id": "guards",
+          "type": "kpi",
+          "title": "Guard Deployment",
+          "value": "100%",
+          "unit": "Shift coverage"
+        },
+        {
+          "id": "visitor",
+          "type": "kpi",
+          "title": "Visitor Control",
+          "value": "Live",
+          "unit": "Gate monitoring"
+        },
+        {
+          "id": "incident",
+          "type": "kpi",
+          "title": "Open Incidents",
+          "value": "03",
+          "unit": "Needs action"
+        },
+        {
+          "id": "patrol",
+          "type": "progress",
+          "title": "Patrol Completion",
+          "value": "96"
+        },
+        {
+          "id": "secmodules",
+          "type": "list",
+          "title": "Security Controls",
+          "data": [
+            "Gate Pass Management",
+            "Visitor Management",
+            "Guard Attendance",
+            "Patrol Monitoring",
+            "CCTV / Control Room",
+            "Incident Management",
+            "Asset Protection",
+            "Emergency Response"
+          ]
+        },
+        {
+          "id": "secrisk",
+          "type": "bar",
+          "title": "Security Control Health",
+          "data": [
+            {
+              "label": "Gate",
+              "value": 97
+            },
+            {
+              "label": "Patrol",
+              "value": 96
+            },
+            {
+              "label": "CCTV",
+              "value": 91
+            },
+            {
+              "label": "Incident",
+              "value": 88
+            },
+            {
+              "label": "Assets",
+              "value": 94
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fire",
+      "title": "FIRE & LIFE SAFETY COMMAND CENTER",
+      "department": "FIRE & SAFETY",
+      "subtitle": "Fire prevention • Drill readiness • Emergency controls • Risk",
+      "theme": "safety",
+      "widgets": [
+        {
+          "id": "drill",
+          "type": "progress",
+          "title": "Mock Drill Readiness",
+          "value": "94"
+        },
+        {
+          "id": "ext",
+          "type": "kpi",
+          "title": "Extinguisher Inspection",
+          "value": "100%",
+          "unit": "Current"
+        },
+        {
+          "id": "permit",
+          "type": "kpi",
+          "title": "Hot Work Permit",
+          "value": "12",
+          "unit": "This month"
+        },
+        {
+          "id": "risk",
+          "type": "kpi",
+          "title": "High-Risk Findings",
+          "value": "05",
+          "unit": "Open"
+        },
+        {
+          "id": "controls",
+          "type": "list",
+          "title": "Fire Prevention Controls",
+          "data": [
+            "Ignition source control",
+            "Flammable material storage",
+            "Electrical safety",
+            "Housekeeping",
+            "Emergency exits",
+            "Fire drill & evacuation",
+            "Equipment inspection",
+            "Permit-to-work"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quality",
+      "title": "QUALITY MANAGEMENT DASHBOARD",
+      "department": "QUALITY",
+      "subtitle": "QMS • Inspection • NCR • CAPA • Customer quality",
+      "theme": "quality",
+      "widgets": [
+        {
+          "id": "qscore",
+          "type": "kpi",
+          "title": "Quality Index",
+          "value": "91%",
+          "unit": "Current"
+        },
+        {
+          "id": "ncr",
+          "type": "kpi",
+          "title": "Open NCR",
+          "value": "09",
+          "unit": "Cases"
+        },
+        {
+          "id": "capa",
+          "type": "progress",
+          "title": "CAPA Closure",
+          "value": "87"
+        },
+        {
+          "id": "audit",
+          "type": "kpi",
+          "title": "Audit Readiness",
+          "value": "95%",
+          "unit": "Evidence"
+        },
+        {
+          "id": "qms",
+          "type": "list",
+          "title": "QMS Document Levels",
+          "data": [
+            "Level 1 • QMS Policy / Manual",
+            "Level 2 • Procedures / SOPs",
+            "Level 3 • Work Instructions",
+            "Level 4 • Forms & Records",
+            "Level 5 • External References"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "production",
+      "title": "PRODUCTION PERFORMANCE CENTER",
+      "department": "PRODUCTION",
+      "subtitle": "Target • Output • Efficiency • Line performance • Overtime",
+      "theme": "production",
+      "widgets": [
+        {
+          "id": "target",
+          "type": "progress",
+          "title": "Production Target Achievement",
+          "value": "86"
+        },
+        {
+          "id": "eff",
+          "type": "kpi",
+          "title": "Average Efficiency",
+          "value": "74%",
+          "unit": "Current"
+        },
+        {
+          "id": "ot",
+          "type": "kpi",
+          "title": "Overtime Control",
+          "value": "78h",
+          "unit": "Weekly reference"
+        },
+        {
+          "id": "lines",
+          "type": "kpi",
+          "title": "Active Lines",
+          "value": "94",
+          "unit": "Lines"
+        },
+        {
+          "id": "prodline",
+          "type": "bar",
+          "title": "Production Area Index",
+          "data": [
+            {
+              "label": "Cutting",
+              "value": 88
+            },
+            {
+              "label": "Sewing",
+              "value": 79
+            },
+            {
+              "label": "Finishing",
+              "value": 83
+            },
+            {
+              "label": "Packing",
+              "value": 90
+            },
+            {
+              "label": "Shipment",
+              "value": 94
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "procurement",
+      "title": "PROCUREMENT GOVERNANCE CENTER",
+      "department": "PROCUREMENT",
+      "subtitle": "Price governance • Supplier risk • Purchase controls • Exceptions",
+      "theme": "corporate",
+      "widgets": [
+        {
+          "id": "spend",
+          "type": "kpi",
+          "title": "Purchase Spend",
+          "value": "Live",
+          "unit": "ERP linked"
+        },
+        {
+          "id": "vendor",
+          "type": "kpi",
+          "title": "Supplier Risk Review",
+          "value": "92%",
+          "unit": "Completed"
+        },
+        {
+          "id": "price",
+          "type": "progress",
+          "title": "Price Verification",
+          "value": "89"
+        },
+        {
+          "id": "exception",
+          "type": "kpi",
+          "title": "High-Risk Exceptions",
+          "value": "06",
+          "unit": "Open"
+        },
+        {
+          "id": "controls",
+          "type": "list",
+          "title": "Golden Procurement Controls",
+          "data": [
+            "Segregation of Duties",
+            "Independent Costing",
+            "Price Benchmarking",
+            "Supplier Integrity Declaration",
+            "Surprise Price Verification",
+            "Vendor Watchlist / Blacklist",
+            "Traceability",
+            "Audit & exception reporting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "finance",
+      "title": "FINANCE & ACCOUNTS CONTROL CENTER",
+      "department": "FINANCE & ACCOUNTS",
+      "subtitle": "Payroll • Cash • Budget • Cost • Control • Audit trail",
+      "theme": "corporate",
+      "widgets": [
+        {
+          "id": "pay",
+          "type": "kpi",
+          "title": "Payroll Control",
+          "value": "98%",
+          "unit": "Validated"
+        },
+        {
+          "id": "budget",
+          "type": "progress",
+          "title": "Budget Utilization",
+          "value": "72"
+        },
+        {
+          "id": "audit",
+          "type": "kpi",
+          "title": "Audit Exceptions",
+          "value": "04",
+          "unit": "Open"
+        },
+        {
+          "id": "cash",
+          "type": "kpi",
+          "title": "Cash Position",
+          "value": "Live",
+          "unit": "ERP linked"
+        },
+        {
+          "id": "finmodules",
+          "type": "list",
+          "title": "Finance Controls",
+          "data": [
+            "Payroll",
+            "Accounts Payable",
+            "Accounts Receivable",
+            "Cash & Bank",
+            "Budget Control",
+            "Cost Analysis",
+            "Fixed Assets",
+            "Financial Audit Trail"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "compliance",
+      "title": "COMPLIANCE & ESG COMMAND CENTER",
+      "department": "COMPLIANCE",
+      "subtitle": "Buyer compliance • Labour • Safety • Social • Environmental",
+      "theme": "corporate",
+      "widgets": [
+        {
+          "id": "compliance",
+          "type": "progress",
+          "title": "Compliance Readiness",
+          "value": "93"
+        },
+        {
+          "id": "findings",
+          "type": "kpi",
+          "title": "Open Findings",
+          "value": "11",
+          "unit": "Tracked"
+        },
+        {
+          "id": "training",
+          "type": "kpi",
+          "title": "Training Completion",
+          "value": "96%",
+          "unit": "Current"
+        },
+        {
+          "id": "audit",
+          "type": "kpi",
+          "title": "Audit Preparation",
+          "value": "91%",
+          "unit": "Evidence"
+        },
+        {
+          "id": "standards",
+          "type": "list",
+          "title": "Compliance Reference Framework",
+          "data": [
+            "BSCI",
+            "WRAP",
+            "SEDEX / SMETA",
+            "SLCP",
+            "Higg FSLM",
+            "RSC",
+            "Better Work",
+            "Bangladesh Labour Law & applicable rules"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "maintenance",
+      "title": "MAINTENANCE & ENGINEERING CENTER",
+      "department": "MAINTENANCE",
+      "subtitle": "Preventive maintenance • Utility • Breakdown • Equipment reliability",
+      "theme": "corporate",
+      "widgets": [
+        {
+          "id": "pm",
+          "type": "progress",
+          "title": "Preventive Maintenance",
+          "value": "90"
+        },
+        {
+          "id": "break",
+          "type": "kpi",
+          "title": "Open Breakdowns",
+          "value": "07",
+          "unit": "Machines"
+        },
+        {
+          "id": "boiler",
+          "type": "kpi",
+          "title": "Utility Readiness",
+          "value": "94%",
+          "unit": "Current"
+        },
+        {
+          "id": "closure",
+          "type": "kpi",
+          "title": "Work Order Closure",
+          "value": "88%",
+          "unit": "On time"
+        },
+        {
+          "id": "maint",
+          "type": "list",
+          "title": "Engineering Controls",
+          "data": [
+            "Preventive Maintenance",
+            "Breakdown Management",
+            "Boiler / Utility",
+            "Electrical Safety",
+            "Spare Parts",
+            "Energy Monitoring",
+            "Calibration",
+            "Equipment History"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "store",
+      "title": "STORE & INVENTORY CONTROL CENTER",
+      "department": "STORE",
+      "subtitle": "Inventory • GRN • Issue • Stock accuracy • Traceability",
+      "theme": "corporate",
+      "widgets": [
+        {
+          "id": "accuracy",
+          "type": "progress",
+          "title": "Stock Accuracy",
+          "value": "96"
+        },
+        {
+          "id": "grn",
+          "type": "kpi",
+          "title": "GRN Pending",
+          "value": "08",
+          "unit": "Transactions"
+        },
+        {
+          "id": "slow",
+          "type": "kpi",
+          "title": "Slow Moving Items",
+          "value": "17",
+          "unit": "SKUs"
+        },
+        {
+          "id": "trace",
+          "type": "kpi",
+          "title": "Traceability",
+          "value": "98%",
+          "unit": "Covered"
+        },
+        {
+          "id": "storemods",
+          "type": "list",
+          "title": "Store Controls",
+          "data": [
+            "Receiving / GRN",
+            "Bin Management",
+            "Issue & Return",
+            "Stock Count",
+            "Slow Moving Analysis",
+            "Fabric / Trim Traceability",
+            "Damage / Loss",
+            "Audit Trail"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "welfare",
+      "title": "WELFARE & EMPLOYEE EXPERIENCE CENTER",
+      "department": "WELFARE",
+      "subtitle": "Employee experience • Grievance • Engagement • Support",
+      "theme": "corporate",
+      "widgets": [
+        {
+          "id": "engage",
+          "type": "progress",
+          "title": "Employee Experience Index",
+          "value": "88"
+        },
+        {
+          "id": "grievance",
+          "type": "kpi",
+          "title": "Open Grievances",
+          "value": "13",
+          "unit": "Cases"
+        },
+        {
+          "id": "resolution",
+          "type": "kpi",
+          "title": "Resolution Rate",
+          "value": "91%",
+          "unit": "Closed"
+        },
+        {
+          "id": "support",
+          "type": "kpi",
+          "title": "Support Requests",
+          "value": "27",
+          "unit": "This month"
+        },
+        {
+          "id": "welfare",
+          "type": "list",
+          "title": "Employee Experience Controls",
+          "data": [
+            "Open Communication",
+            "Grievance Management",
+            "Recognition",
+            "Growth Support",
+            "Workplace Culture",
+            "Welfare Services",
+            "Feedback",
+            "Retention Risk"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "audit",
+      "title": "INTERNAL AUDIT & RISK CENTER",
+      "department": "INTERNAL AUDIT",
+      "subtitle": "Risk • Controls • Audit plan • CAPA • Fraud / exception monitoring",
+      "theme": "corporate",
+      "widgets": [
+        {
+          "id": "risk",
+          "type": "progress",
+          "title": "Control Effectiveness",
+          "value": "90"
+        },
+        {
+          "id": "auditplan",
+          "type": "kpi",
+          "title": "Audit Plan Completion",
+          "value": "84%",
+          "unit": "YTD"
+        },
+        {
+          "id": "fraud",
+          "type": "kpi",
+          "title": "Exception Alerts",
+          "value": "09",
+          "unit": "Open"
+        },
+        {
+          "id": "capa",
+          "type": "kpi",
+          "title": "CAPA Closure",
+          "value": "87%",
+          "unit": "Current"
+        },
+        {
+          "id": "riskcontrols",
+          "type": "list",
+          "title": "Risk Governance",
+          "data": [
+            "Risk Register",
+            "Control Testing",
+            "Surprise Audit",
+            "Fraud Exception Review",
+            "Procurement Audit",
+            "Payroll Audit",
+            "Asset Audit",
+            "Management Reporting"
+          ]
+        }
+      ]
+    }
+  ]
+}

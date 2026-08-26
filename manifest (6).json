@@ -1,0 +1,14 @@
+{
+  "name": "RIZVI FAMILY - Integrated Performance Management",
+  "short_name": "RIZVI-MANAGEMENT",
+  "description": "RIZVI FAMILY Integrated Performance Management & Evaluation Framework",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fff8e1",
+  "theme_color": "#f5b800",
+  "orientation": "any",
+  "icons": [
+    {"src":"icons/icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"icons/icon-512.png","sizes":"512x512","type":"image/png"}
+  ]
+}

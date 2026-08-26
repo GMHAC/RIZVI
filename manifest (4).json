@@ -1,0 +1,11 @@
+{
+  "name": "RIZVIWORLD Master Monitoring Dashboard",
+  "version": "Final-Standalone-1.0",
+  "root": "index.html",
+  "operationalModules": 44,
+  "sectionCatalog": 32,
+  "designationCatalog": 200,
+  "employeeTarget": 7000,
+  "voice": "bn-BD browser SpeechSynthesis fallback; production broadcast TTS required",
+  "sync": "standalone local demo; live Firebase synchronization requires backend connection"
+}

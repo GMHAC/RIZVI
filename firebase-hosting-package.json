@@ -1,0 +1,13 @@
+{
+  "name": "rizvi-family-impms-firebase-hosting",
+  "private": true,
+  "description": "RIZVI FAMILY IMPMS Firebase Hosting deployment package",
+  "scripts": {
+    "firebase:login": "firebase login",
+    "firebase:deploy": "firebase deploy --only hosting",
+    "firebase:preview": "firebase hosting:channel:deploy preview"
+  },
+  "devDependencies": {
+    "firebase-tools": "^14.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+# সার্ভার পোর্ট
+PORT=3000
+
+# JWT সিক্রেট — অবশ্যই একটি লম্বা, র‍্যান্ডম স্ট্রিং দিয়ে বদলে দিন
+JWT_SECRET=replace-this-with-a-very-long-random-secret-string
+
+# প্রথম অ্যাডমিন অ্যাকাউন্ট (scripts/seed_admin.js চালানোর সময় ব্যবহৃত হবে)
+ADMIN_EMPLOYEE_CODE=ADMIN001
+ADMIN_NAME=System Administrator
+ADMIN_PASSWORD=ChangeThisPassword123!
+
+# ডিফল্ট পাসওয়ার্ড যা CSV ইমপোর্টের সময় প্রতিটি কর্মীকে দেওয়া হবে
+# (কর্মীদের প্রথম লগইনে পাসওয়ার্ড পরিবর্তন করতে বাধ্য করা হয়)
+DEFAULT_EMPLOYEE_PASSWORD=Rizvi@1234

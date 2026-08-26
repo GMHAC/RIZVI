@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RIZVIWORLD — Master Monitoring Dashboard</title>
+<style>
+:root{--bg:#050609;--panel:#101116;--panel2:#171923;--gold:#f6c445;--red:#ef4444;--green:#22c55e;--cyan:#38bdf8;--text:#f7f7fb;--muted:#a9adbb;--line:#292d39}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 20%,#201707 0,#07080b 38%,#030406 100%);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans Bengali","Noto Sans",sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;padding:12px 16px;background:rgba(4,5,8,.93);backdrop-filter:blur(16px);border-bottom:1px solid #272a34}
+.brand{font-weight:800;letter-spacing:.4px}.brand small{display:block;color:var(--gold);font-weight:600}.hamb{font-size:28px;background:none;border:0;color:white}
+.actions{margin-left:auto;display:flex;gap:8px}.pill{padding:8px 11px;border:1px solid var(--line);border-radius:999px;background:#11131a;color:#ddd}
+.layout{display:flex}.side{position:fixed;top:64px;bottom:0;width:310px;overflow:auto;padding:14px;background:rgba(7,8,12,.97);border-right:1px solid var(--line);z-index:25;transition:.25s}.side.closed{transform:translateX(-100%)}.side h3{color:var(--gold);margin:10px 8px}.nav{display:flex;gap:8px;align-items:center;width:100%;text-align:left;padding:10px;border:1px solid transparent;border-radius:10px;background:transparent;color:#ddd}.nav:hover,.nav.active{background:#171a22;border-color:#343846}.num{color:#73798a;min-width:26px}
+main{margin-left:310px;width:calc(100% - 310px);padding:18px}.side.closed~main{margin-left:0;width:100%}
+.hero{min-height:560px;border:1px solid #4b3a15;border-radius:26px;position:relative;overflow:hidden;background:linear-gradient(180deg,#0a0906,#030407);box-shadow:0 0 60px #000 inset}
+.water{position:absolute;inset:0;background:radial-gradient(circle at 50% 100%,rgba(24,77,91,.3),transparent 45%),linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,40,55,.12));overflow:hidden}
+.bubbles{position:absolute;inset:0;overflow:hidden;pointer-events:none}.bubble{position:absolute;bottom:-30px;width:var(--s);height:var(--s);border:1px solid rgba(170,235,255,.45);border-radius:50%;box-shadow:0 0 12px rgba(90,220,255,.15);animation:up var(--t) linear infinite;left:var(--x)}.bubble.red{border-color:#ff4747;box-shadow:0 0 15px #ff1b1b55}
+@keyframes up{to{transform:translateY(-680px) translateX(25px);opacity:0}}
+.flowerWrap{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:min(650px,75vw);height:min(650px,75vw);display:grid;place-items:center;filter:drop-shadow(0 0 35px rgba(255,196,69,.28));transition:1s}
+.flower{font-size:clamp(170px,30vw,360px);animation:bloom 5s ease-in-out infinite}.flower.enter{animation:rise 2.6s ease-out}.flower.break{animation:shatter 2.5s ease-in forwards}
+@keyframes bloom{50%{transform:scale(1.04) rotate(1deg)}}
+@keyframes rise{0%{transform:translateY(260px) scale(.2);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
+@keyframes shatter{0%{transform:scale(1);opacity:1;filter:blur(0)}100%{transform:scale(2.2);opacity:0;filter:blur(18px)}}
+.speech{position:absolute;left:5%;right:5%;bottom:20px;text-align:center;background:rgba(0,0,0,.62);border:1px solid #5b4a20;border-radius:18px;padding:14px;backdrop-filter:blur(10px)}.speech strong{color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:14px 0}.card{background:linear-gradient(145deg,#14161e,#0d0f15);border:1px solid var(--line);border-radius:16px;padding:15px}.card .v{font-size:28px;font-weight:800}.card .l{color:var(--muted);font-size:13px}.green{color:var(--green)}.red{color:var(--red)}.gold{color:var(--gold)}
+.panel{background:#0d0f14;border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0}.panel h2{margin-top:0}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:160px}input,select,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid #303440;background:#080a0e;color:white}.btn{padding:10px 14px;border:1px solid #484d5a;border-radius:10px;background:#171a22;color:#fff}.btn.primary{background:#b8860b;border-color:#e6bd3e;color:#080808;font-weight:800}
+table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #252936;text-align:left;font-size:13px}th{color:var(--gold)}
+.status{padding:4px 8px;border-radius:999px;background:#1d2430}.status.ok{color:#6ee7a3}.status.warn{color:#ffd66b}.status.bad{color:#ff7373}
+.toast{position:fixed;right:16px;bottom:16px;z-index:100;background:#171923;border:1px solid #454a58;padding:13px 16px;border-radius:12px;box-shadow:0 15px 50px #000;max-width:360px}
+.modal{position:fixed;inset:0;background:#000b;z-index:90;display:grid;place-items:center;padding:18px}.modalbox{width:min(520px,100%);background:#11131a;border:1px solid #3b3f4c;border-radius:18px;padding:18px}
+.small{font-size:12px;color:var(--muted)}.editable{background:#0b0d12}.login{max-width:500px;margin:12vh auto;padding:24px;border:1px solid #3a321b;border-radius:22px;background:#0d0f14}.login h1{color:var(--gold)}
+@media(max-width:900px){.side{width:285px}.side:not(.closed){box-shadow:25px 0 60px #000}main,.side.closed~main{margin-left:0;width:100%;padding:10px}.top{padding:10px}.hero{min-height:650px}.speech{font-size:13px}.grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header class="top">
+<button class="hamb" onclick="toggleSide()">☰</button>
+<div class="brand">RIZVIWORLD <small>RIZVI FASHIONS LTD. — LIVE</small></div>
+<div class="actions"><span class="pill" id="clock">--:--</span><button class="pill" onclick="speakStatus()">🔊 Voice</button><button class="pill" onclick="openLogin()">🔐 Login</button></div>
+</header>
+
+<div class="layout">
+<aside class="side" id="side"><h3>MAIN SIDEBAR — OPERATIONAL MANAGEMENT</h3><div id="nav"></div></aside>
+<main>
+<section id="loginScreen" class="login hidden">
+<h1>RIZVIWORLD Secure Access</h1><p class="small">Demo distribution package. Connect Firebase/Auth before production use.</p>
+<div class="row"><input id="loginId" placeholder="Management / Employee ID / Department / Section"><input id="loginPass" type="password" placeholder="Password (Management/Admin only)"></div>
+<div class="row"><button class="btn primary" onclick="login()">Enter Dashboard</button><button class="btn" onclick="closeLogin()">Cancel</button></div>
+<p class="small">Management demo: ssheraji1982@gmail.com. Employee access: official ID card number, subject to master employee mapping.</p>
+</section>
+
+<section id="app">
+<div class="hero">
+<div class="water"><div class="bubbles" id="bubbles"></div>
+<div class="flowerWrap"><div id="flower" class="flower">🌹</div></div>
+<div class="speech" id="speech"><strong>Master Monitoring Dashboard</strong><br>সব বিভাগ ও সেকশনের সর্বশেষ স্ট্যাটাস এক জায়গায়।</div>
+</div></div>
+
+<div class="grid" id="cards"></div>
+<div class="panel"><h2>📡 Live Operational Status</h2><table><thead><tr><th>Module / Section</th><th>Last Update</th><th>Status</th><th>Owner</th></tr></thead><tbody id="statusRows"></tbody></table></div>
+
+<div class="panel"><h2>📣 Management Command / Opinion</h2><div class="row"><textarea id="command" rows="3" placeholder="মতামত / আদেশ / নির্দেশনা লিখুন..."></textarea><button class="btn primary" onclick="sendCommand()">Publish Command</button></div><div id="commands" class="small"></div></div>
+
+<div class="panel"><h2>📝 Update Center</h2><div class="row">
+<select id="updateTarget"></select><select id="updateStatus"><option>সম্পূর্ণ</option><option>আংশিক সম্পন্ন</option><option>না / অসম্পন্ন</option><option>Pending</option></select><input id="updateNote" placeholder="কাজের নোট / বর্তমান অবস্থা"><button class="btn primary" onclick="saveUpdate()">Save Update</button>
+</div><p class="small">কোনো record delete নয়। পরিবর্তন হলে Revision/Audit Trail তৈরি হবে।</p></div>
+
+<div class="panel"><h2>📎 Evidence / Document Center</h2><div class="row"><input type="file" id="files" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,image/*,audio/*,video/*"><button class="btn" onclick="recordAudio()">🎙️ Voice Record</button><button class="btn" onclick="recordVideo()">🎥 Video Record</button></div><p class="small">এই standalone package-এ browser-local demonstration। Production Firebase Storage/Firestore integration প্রয়োজন।</p></div>
+
+<div class="panel"><h2>📊 Employee / Department Evaluation</h2><div class="grid" id="evaluation"></div></div>
+</section>
+</main></div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+const modules=[
+"🏢 Corporate & Strategic Management","📢 Management Communication & Live Conference","🤝 Buyer & Trading House Management","👥 HRM – Full Human Resource Management","⏱️ Attendance & Payroll Management","🎓 Training & Competency Management","❤️ Welfare Management","🏥 Medical Management","📣 Grievance Management","⚖️ Compliance Management","📋 Integrated ISO Management System","🔎 Internal Audit Management","🧾 External / Buyer Audit Management","⚠️ Risk Management","🔄 CAPA & Continual Improvement","🛡️ HSE / Occupational Health & Safety","🌱 Environmental Management","♻️ Waste Management","🧪 Chemical Management","🔐 IT & Information Security Management","📁 Document & Record Management","📊 KPI & Performance Management – All Employees","📅 Planning Management","📐 IE Management","🏭 Production Management","🔍 Quality Assurance / QC Management","🧵 Fabric Management","🧷 Accessories Management","🛒 Procurement Management","📦 Inventory & Store Management","🏷️ Marking & Traceability Management","💰 Accounts & Finance Management","🚢 Commercial Management","🔧 Maintenance Management","⚡ Utility & Energy Management","♻️ Jhute / Leftover / Stock Lot Management","🚨 Emergency & Crisis Management","🔄 Business Continuity Management","📝 Task & Workflow Management","📈 Reports & Analytics","🔔 Notification & Alert Center","🔐 User / Role / Permission Management","🗃️ Master Data Management","⚙️ System Administration","⚙️ SETTINGS"];
+const sections=["Accounts & Finance","Admin, HR & Compliance","Audit","CAD","Commercial","Cutting","Cutting Quality","Electrical","Fabric","Finishing","Finishing Quality","IE","Marketing & Merchandising","Mechanical","Planning","Procurement","Production","QA Audit","Quality","Quality Receive","Receive","Sample","Security","Sewing","Sewing Quality","Size Set","Stock Lot","Store Quality","Store","Others","System","Settings"];
+const designations=`A.G.M|A.S.M.O|Assort Man|Asst. Boilar Operator|Asst. Bundle Man|Asst. Cutter|Asst. Electrician|Asst. Heat Seal Man|Asst. Incharge|Asst. Issue Man|Asst. Lay Man|Asst. Manager|Asst. Mechanic|Asst. Merchandiser|Asst. Officer|Asst. Print Delivery Man|Asst. Printer|Asst. Production Manager|Asst. Quality Incharge|Asst. Receive Man|Asst. Relax Man|Asst. Scissor Man|Asst. Supervisor|Asst.Executive|Asst.Manager|Asst.Mechanic Incharge|Asst.Reporter|Asst.Technical Incharge|Auditor|Boilar Supervisor|Boiler Operator|Bundle Man|Button Supervisor|Canteen Boy|Child Care|Civil Engineer|Cleaner|Cleaner Supervisor|Cook|Cutter Man|Cutting Asst.|Cutting Incharge|Cutting Supervisor|Cutting Technician|Deputy General Manager|Deputy Manager|Driver|E.C.O|Electric Incharge|Electric Supervisor|Electric Technician|Executive|Fabric Incharge|Fashion Designer|Finishing Asst.|Finishing Incharge|Fire Man|Fire Safety Officer|Folder|Folding Supervisor|G.P.Q|General Electrician|General Manager|Generator Supervisor|Heat Seal Man|Heat Seal Supervisor|Input Man|Input Supervisor (Cutting)|Iron Supervisor|Iron Man|Issue Man|Jr Bundle Man|Jr Cutter Man|Jr Heat Seal Man|Jr Lay Man|Jr Poly man|Jr Scissor Man|Jr Spot Man|Jr Sticker Man|Jr Tag Man|Jr Writer Man|Jr. Bundle Man|Jr. Folder|Jr. Input Man|Jr. Iron Man|Jr. Issue Man|Jr. Merchandiser|Jr. Metal Detector Operator|Jr. Numbering Man|Jr. Officer|Jr. Packer|Jr. Piping M.O|Jr. Q.I|Jr. Receive Man|Jr. S.M.O (B/T)|Jr. S.M.O (F/D)|Jr. S.M.O (F/L)|Jr. S.M.O (O/L)|Jr. S.M.O (P/M)|Jr. S.M.O (Z/Z)|Jr. Scissor Man|Jr.Computer Operator|Jr.E.C.O|Jr.Executive|Jr.Lady Guard|Jr.Needle Man|Jr.Piping M.O|Jr.Plamber|Jr.Poly Man|Jr.Print Delivery Man|Jr.Relax Man|Jr.T.S.M.O|Jr.Tag Man|Lift Operator|Line Ironman|Loader|Loader Supervisor|MTO|Machine Technician|Manager|Mechanic Incharge|Medical Assistant|Medical Asst.|Medical Officer|Merchandiser|Messenger|Nurse|Officer|Packer|Packing Supervisor|Peon|Piping M. O|Poly Man|Poly Woman|Print Delivery Man|Product Safety Officer|Production Manager|Production Reporter|Q.I|Quality Incharge|Quality Supervisor|Receive Incharge|Receive Man|Receive Supervisor|S.M.O (F/D)|S.M.O B/T|S.M.O F/L|S.M.O O/L|S.M.O P/M|S.M.O Z/Z|S.S.M.O (B/T)|S.S.M.O (F/D)|S.S.M.O (F/L)|S.S.M.O (O/L)|S.S.M.O (P/M)|S.S.M.O (Z/Z)|Sample Man.|Sample Supervisor|Security Guard|Security Supervisor|Sewing Incharge|Sewing Supervisor|Sewing Technician|Size Set Incharge|Spotman|Sr. Cutter Man|Sr. Executive|Sr. Manager|Sr. Merchandiser|Sr. Officer|Sr. Production Manager|Sr. Q.I|Sr. Sample Man|Sr. Spotman|Sr.Finishing Supervisor|Sr.G.P.Q|Sr.Iron Supervisor|Sr.Quality Supervisor|Sr.Receive Supervisor|Sr.Receive Man|Store Asst|Store Keeper|Store Supervisor|Sweeper|T.S.M.O|Tag Man|Technical Incharge|Technician (AC)|Telephone Operator|Trainee Merchandiser|Welder|Welfare Officer|System|SETTINGS`.split("|");
+const extra=["Chief Executive Officer","Managing Director","Deputy Managing Director","Director","GM-HAC","GM-Production","GM-Admin","GM-Finance","GM-Commercial","AGM-HR","AGM-Compliance","DGM-HR","DGM-Production","DGM-Quality","DGM-Commercial","Head of Department","Section Head","Team Leader","Coordinator","Senior Coordinator","Supervisor","Assistant Supervisor","Operator","Senior Operator","Trainee","Intern","Consultant","Engineer","Senior Engineer","Assistant Engineer","Officer In Charge","Quality Auditor","Compliance Auditor","ISO Coordinator","Management Representative","Document Controller","System Administrator","Database Administrator","IT Support Officer"];
+extra.forEach(x=>designations.push(x)); while(designations.length<200) designations.push("Custom Designation "+(designations.length+1));
+
+const state=JSON.parse(localStorage.getItem("rz_state")||"{}");
+state.updates=state.updates||{}; state.commands=state.commands||[]; state.user=state.user||null;
+function persist(){localStorage.setItem("rz_state",JSON.stringify(state))}
+function toggleSide(){document.getElementById("side").classList.toggle("closed")}
+function toast(s){const t=document.getElementById("toast");t.textContent=s;t.classList.remove("hidden");setTimeout(()=>t.classList.add("hidden"),3500)}
+function openLogin(){document.getElementById("loginScreen").classList.remove("hidden")}
+function closeLogin(){document.getElementById("loginScreen").classList.add("hidden")}
+function login(){
+ const id=document.getElementById("loginId").value.trim(), p=document.getElementById("loginPass").value;
+ if(id==="ssheraji1982@gmail.com" && p==="Admin123456"){state.user={type:"MANAGEMENT",id};toast("Management Master Dashboard activated.");closeLogin();render()}
+ else if(id && !p){state.user={type:"EMPLOYEE",id,section:"Auto-mapped from Employee Master"};toast("Employee dashboard opened. Production mapping requires Firebase Employee Master.");closeLogin();render()}
+ else if(id && !p && sections.includes(id)){state.user={type:"SUBADMIN",id};closeLogin();render()}
+ else toast("Login তথ্য যাচাই করুন। Production-এ Firebase Auth/Employee Master mapping সংযুক্ত করুন।")
+ persist()
+}
+function renderNav(){document.getElementById("nav").innerHTML=modules.map((m,i)=>`<button class="nav" onclick="selectModule(${i})"><span class="num">${String(i+1).padStart(2,"0")}</span>${m}</button>`).join("")}
+function selectModule(i){toast("Selected: "+modules[i]);document.querySelectorAll(".nav").forEach((x,j)=>x.classList.toggle("active",i===j));}
+function now(){return new Date().toLocaleString("bn-BD")}
+function renderCards(){
+ const vals=[6423,58760,96.8,148,37,23,91.4,94.2,88.7,76.5,12,4];
+ const labs=["মোট কর্মী","আজকের উৎপাদন","Compliance Score","Active Buyers","Pending Inquiry","Running Orders","T&A Achievement","Production Achievement","Shipment Achievement","On-Time Delivery","Delayed Orders","Buyer Complaints"];
+ document.getElementById("cards").innerHTML=labs.map((l,i)=>`<div class="card"><div class="l">${l}</div><div class="v">${vals[i]}${i>1&&i<10?"%":""}</div><div class="${i>9?"red":"green"}">${i>9?"Attention Required":"Live / Synced"}</div></div>`).join("")
+}
+function renderRows(){
+ const body=document.getElementById("statusRows");
+ body.innerHTML=modules.map((m,i)=>{
+   const u=state.updates[m], age=u?((Date.now()-u.ts)/60000):999;
+   const bad=age>60, warn=age>45;
+   return `<tr><td>${m}</td><td>${u?u.at:"—"}</td><td><span class="status ${bad?"bad":warn?"warn":"ok"}">${bad?"🔴 No update > 1 hour":warn?"🟠 Due soon":"🟢 On track"}</span></td><td>${u?u.by:"Department / Section"}</td></tr>`
+ }).join("")
+ document.getElementById("updateTarget").innerHTML=modules.map(m=>`<option>${m}</option>`).join("")
+}
+function saveUpdate(){
+ const target=document.getElementById("updateTarget").value, st=document.getElementById("updateStatus").value, note=document.getElementById("updateNote").value.trim();
+ state.updates[target]={status:st,note,ts:Date.now(),at:now(),by:state.user?state.user.id:"Demo User",edited:!!state.updates[target],revision:(state.updates[target]?.revision||0)+1};
+ persist();render();toast("Update synchronized locally. Revision "+state.updates[target].revision);
+}
+function sendCommand(){
+ const c=document.getElementById("command").value.trim();if(!c)return;
+ state.commands.unshift({text:c,by:state.user?.id||"Management Demo",at:now()});persist();document.getElementById("command").value="";renderCommands();speak("ম্যানেজমেন্ট থেকে নতুন নির্দেশনা প্রকাশ করা হয়েছে।");toast("Command published to all dashboards in this package.");
+}
+function renderCommands(){document.getElementById("commands").innerHTML=state.commands.slice(0,8).map(x=>`<p>📣 <b>${x.by}</b> — ${x.at}<br>${x.text}</p>`).join("")||"কোনো নতুন নির্দেশনা নেই।"}
+function renderEval(){document.getElementById("evaluation").innerHTML=["দৈনিক","সাপ্তাহিক","মাসিক","ত্রৈমাসিক","ষান্মাসিক","বার্ষিক"].map(x=>`<div class="card"><div class="l">${x} Evaluation</div><div class="v">${Math.floor(80+Math.random()*19)}%</div><div class="green">ISO / SOP tracking</div></div>`).join("")}
+function speak(text){
+ if(!("speechSynthesis" in window)){toast("এই browser-এ voice synthesis নেই।");return}
+ speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="bn-BD";u.rate=.88;u.pitch=1.02;u.volume=1;
+ const voices=speechSynthesis.getVoices();const v=voices.find(x=>/bn[-_](BD|IN)/i.test(x.lang))||voices.find(x=>/bengali/i.test(x.name));if(v)u.voice=v;
+ speechSynthesis.speak(u)
+}
+function buildAnnouncement(){
+ const late=modules.filter(m=>{const u=state.updates[m];return !u||Date.now()-u.ts>60*60000});
+ const base="আসসালামু আলাইকুম, ওয়া রহমাতুল্লাহ। আমি আসছি আপনার কাছে সব বিষয়ে আপডেট নিয়ে। আমাদের অত্যন্ত প্রিয় ও সম্মানিত জিএম এডমিন এইচআর এন্ড কমপ্লায়েন্স, জনাব সিরাজী স্যারের পক্ষ থেকে আপনাকে অনেক অনেক সালাম ও মোবারকবাদ। আমি এখন আপনার সকল বিষয়ে আপডেট নিয়ে এসেছি। ";
+ const stat=`মাস্টার ড্যাশবোর্ডে মোট চুয়াল্লিশটি অপারেশনাল মডিউল, ${sections.length}টি সেকশন এবং দুইশতটিরও বেশি ডেজিগনেশন মনিটরিং কাঠামো রয়েছে। বর্তমানে মোট কর্মী ছয় হাজার চারশ তেইশ, আজকের উৎপাদন আটান্ন হাজার সাতশ ষাট পিস, কমপ্লায়েন্স স্কোর ছিয়ানব্বই দশমিক আট শতাংশ। `;
+ const alert=late.length?`স্যার, আপনার রিজভী ফ্যাশনসের ${late.slice(0,4).join(", ")} এখনো এক ঘণ্টার মধ্যে আপডেট দেয়নি। দায়িত্বপ্রাপ্তদের আপডেট ও অনুসরণ প্রয়োজন।`:"স্যার, সকল প্রধান মডিউলের সাম্প্রতিক আপডেট সিস্টেমে পাওয়া যাচ্ছে।";
+ return base+stat+alert
+}
+function speakStatus(){const t=buildAnnouncement();document.getElementById("speech").textContent=t;speak(t)}
+function flowerCycle(){
+ const f=document.getElementById("flower");f.className="flower enter";setTimeout(()=>{document.getElementById("speech").innerHTML="<strong>লাইভ ঘোষণা</strong><br>"+buildAnnouncement();speakStatus()},1600);setTimeout(()=>{f.className="flower break"},12000);setTimeout(()=>{f.className="flower enter";f.textContent=["🌹","🌻","🌷","🌼","🌺","🌸"][Math.floor(Math.random()*6)]},14500)
+}
+function bubbles(){
+ const b=document.getElementById("bubbles");for(let i=0;i<95;i++){const d=document.createElement("i");d.className="bubble"+(Math.random()<.06?" red":"");d.style.setProperty("--s",(3+Math.random()*13)+"px");d.style.setProperty("--x",Math.random()*100+"%");d.style.setProperty("--t",(7+Math.random()*14)+"s");d.style.animationDelay=(-Math.random()*15)+"s";b.appendChild(d)}
+}
+function render(){renderCards();renderRows();renderCommands();renderEval()}
+setInterval(()=>document.getElementById("clock").textContent=new Date().toLocaleTimeString("bn-BD"),1000);
+renderNav();bubbles();render();setTimeout(flowerCycle,2000);setInterval(flowerCycle,15*60*1000);
+window.speechSynthesis?.getVoices();
+</script>
+</body></html>

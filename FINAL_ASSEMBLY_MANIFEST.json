@@ -1,0 +1,24 @@
+{
+  "package": "RIZVI_FAMILY_IMPMS_PRODUCTION_V1",
+  "organization_baseline": {
+    "employees": 6339,
+    "departments": 10,
+    "sections": 29,
+    "locations": 8,
+    "designations": 197,
+    "categories": 4
+  },
+  "performance": {
+    "daily": 100,
+    "weekly_working_days": 6,
+    "weekly_daily_score_total": 600,
+    "weekly_converted_score": 100,
+    "weekly_total_working_limit_hours": 72,
+    "general_duty_hours": 48,
+    "yellow_at_hours": 72,
+    "red_above_hours": 72
+  },
+  "refresh_seconds": 10,
+  "status": "Production-oriented source package / runnable PWA + FastAPI backend + SQLite seed database. Signed APK/AAB build requires Android build environment and HTTPS deployment.",
+  "location_note": "GPS-based location is included. Phone-number-only carrier/RF location requires authorized telecom integration and is not implemented as a normal app capability."
+}

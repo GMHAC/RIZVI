@@ -1,0 +1,1017 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08112b">
+<title>RIZVI MANAGEMENT • Unified Living System</title>
+<link rel="icon" href="assets/rose-hero.png">
+<style>
+/* =========================================================
+   RIZVI UNIFIED — single-file SPA, works on file:// (offline)
+   Admin : ssheraji@gmail.com  /  Admin123456
+   User  : self sign-up
+   ========================================================= */
+:root{
+  --bg:#f5f7fb;--bgDarker:#0f172a;--nav:#0f1d3a;--panel:#ffffff;
+  --panelD:rgba(15,23,42,.85);--line:rgba(15,23,42,.08);
+  --gold:#f5b51b;--gold2:#ffe18a;--gold3:#a87a05;
+  --red:#e00024;--green:#16c98d;--blue:#2563eb;
+  --text:#0f172a;--muted:#64748b;--white:#fff;
+}
+*{box-sizing:border-box}html,body{margin:0;padding:0;min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Inter','Noto Sans Bangla',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-size:14px;overflow-x:hidden}
+a,button{font-family:inherit}button{cursor:pointer}
+input,select,textarea{font:inherit;background:#fff;border:1px solid #d6dbe4;border-radius:10px;padding:10px 12px;outline:none;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.16)}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;letter-spacing:.5px}
+
+/* ===== ambient + yellow rose field ===== */
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:-2;background:
+  radial-gradient(circle at 80% 10%,rgba(245,181,27,.14),transparent 32%),
+  radial-gradient(circle at 10% 90%,rgba(37,99,235,.10),transparent 32%),
+  radial-gradient(circle at 50% 70%,rgba(245,181,27,.06),transparent 50%)}
+.rose-field{position:fixed;inset:0;pointer-events:none;z-index:-1;overflow:hidden}
+.rose-field::before{content:"";position:absolute;inset:-10%;
+  background:url('./assets/rose-yellow-transparent.png') center/cover no-repeat;
+  opacity:.20;filter:blur(6px) drop-shadow(0 0 70px rgba(245,181,27,.55));
+  animation:floaty 22s ease-in-out infinite}
+.rose-field::after{content:"";position:absolute;inset:-10%;
+  background:url('./assets/rose-hero.png') 80% 18%/360px no-repeat;
+  opacity:.10;filter:blur(4px);
+  animation:floaty2 28s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translate(-3%,-2%) rotate(-6deg) scale(1)}
+  50%{transform:translate(4%,3%) rotate(8deg) scale(1.06)}}
+@keyframes floaty2{0%,100%{transform:translate(-2%,2%) rotate(0) scale(1)}
+  50%{transform:translate(4%,-4%) rotate(-12deg) scale(1.05)}}
+.petals{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.petals span{position:absolute;top:-30px;color:var(--gold);font-size:14px;text-shadow:0 0 8px rgba(245,181,27,.4);animation:fall linear infinite;opacity:.75}
+@keyframes fall{to{transform:translateY(120vh) rotate(360deg)}}
+
+/* ===== auth ===== */
+.auth-wrap{min-height:100vh;display:grid;place-items:center;padding:24px;position:relative;z-index:2}
+.auth-card{width:min(440px,100%);background:#fff;border:1px solid #d6dbe4;border-radius:24px;padding:30px;box-shadow:0 30px 80px rgba(15,23,42,.10)}
+.auth-brand{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:20px}
+.auth-brand .logo-mark{width:90px;height:90px;border-radius:50%;
+  background:#fff url('./assets/rose-hero.png') center/cover no-repeat;
+  box-shadow:0 0 60px rgba(245,181,27,.7);
+  animation:bloom 3.2s ease-in-out infinite;
+  border:2px solid var(--gold)}
+.auth-brand h1{margin:6px 0 0;font-size:22px;letter-spacing:2px;color:var(--nav)}
+.auth-brand p{margin:0;font-size:11px;color:var(--muted);letter-spacing:2px;text-align:center}
+@keyframes bloom{0%,100%{transform:scale(1);filter:drop-shadow(0 0 22px rgba(245,181,27,.6))}
+  50%{transform:scale(1.06);filter:drop-shadow(0 0 36px rgba(245,181,27,.85))}}
+.tabs{display:flex;background:#f1f5f9;border-radius:12px;padding:4px;margin-bottom:16px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--muted);padding:10px;border-radius:9px;font-size:13px;font-weight:600}
+.tabs button.on{background:#fff;color:#0f172a;box-shadow:inset 0 0 0 1px #d6dbe4}
+.field{margin-bottom:13px}
+.error{color:var(--red);font-size:12px;margin:6px 0 0;min-height:14px}
+.success{color:var(--green);font-size:12px;margin:6px 0 0;min-height:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:11px 16px;font-weight:600;font-size:14px;letter-spacing:.5px;transition:.18s}
+.btn-primary{background:linear-gradient(180deg,var(--blue),#1d4ed8);color:#fff;box-shadow:0 8px 24px rgba(37,99,235,.30)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(37,99,235,.45)}
+.btn-ghost{background:transparent;border:1px solid #d6dbe4;color:#0f172a}
+.btn-danger{background:linear-gradient(180deg,var(--red),#a30015);color:#fff}
+.btn-gold{background:linear-gradient(180deg,var(--gold),var(--gold3));color:#1a1100}
+.btn-block{width:100%}
+.btn-sm{padding:7px 12px;font-size:12px}
+
+/* ===== app shell ===== */
+.app-shell{display:flex;min-height:100vh;position:relative;z-index:1}
+.sidebar{width:300px;position:fixed;inset:0 auto 0 0;background:linear-gradient(180deg,#0e1f3f,#0a1630);color:#cbd5e1;padding:18px 0;overflow-y:auto;z-index:40;box-shadow:2px 0 30px rgba(15,23,42,.10)}
+.brand{display:flex;align-items:center;gap:11px;padding:6px 22px 14px}
+.brand-mark{width:42px;height:42px;border-radius:10px;background:linear-gradient(180deg,#1e40af,#1d4ed8);display:grid;place-items:center;color:#fff;font-size:18px}
+.brand-text strong{display:block;letter-spacing:2px;font-size:17px;color:#fff}
+.brand-text span{font-size:10px;letter-spacing:3px;color:#94a3b8}
+.live-chip{margin:8px 22px 6px;padding:6px 12px;border:1px solid rgba(22,201,141,.2);border-radius:99px;font-size:10px;letter-spacing:2px;display:flex;align-items:center;gap:7px;color:#a3eac0}
+.live-chip i{width:7px;height:7px;background:var(--green);border-radius:50%;box-shadow:0 0 10px var(--green);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+.section-label{padding:14px 22px 4px;font-size:10px;letter-spacing:3px;color:#64748b;font-weight:600;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;padding:0 12px;gap:2px}
+.nav-item{width:100%;display:flex;gap:14px;align-items:center;padding:11px 14px;background:transparent;border:0;border-radius:12px;text-align:left;color:#cbd5e1;font-size:14px;transition:.18s}
+.nav-item .ic{width:20px;text-align:center;font-size:16px;color:#64748b;flex-shrink:0}
+.nav-item .badge{margin-left:auto;background:var(--blue);color:#fff;border-radius:99px;font-size:10px;padding:2px 8px;font-weight:700}
+.nav-item:hover{background:rgba(255,255,255,.04);color:#fff}
+.nav-item:hover .ic{color:var(--gold)}
+.nav-item.on{background:#2563eb;color:#fff;font-weight:600;box-shadow:0 8px 22px rgba(37,99,235,.25)}
+.nav-item.on .ic{color:#fff}
+.section-divider{margin:6px 16px;border:0;border-top:1px solid rgba(255,255,255,.08)}
+.sidebar-footer{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,#0a1630 35%);padding:14px 22px}
+.sidebar-footer .who{font-size:12px;color:#cbd5e1;margin-bottom:8px}
+.sidebar-footer .who b{color:#fff;display:block}
+.sidebar-footer .role{font-size:10px;letter-spacing:2px;color:#94a3b8}
+.sidebar-footer .role.admin{color:var(--gold)}
+
+.main{margin-left:300px;width:calc(100% - 300px);min-height:100vh;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;display:flex;align-items:center;gap:14px;padding:0 28px;height:72px;background:rgba(245,247,251,.92);border-bottom:1px solid #e2e8f0;z-index:20;backdrop-filter:blur(18px)}
+.menu{display:none;font-size:22px;background:transparent;border:0;color:var(--nav);padding:6px 10px}
+.crumb span{display:block;font-size:9px;letter-spacing:3px;color:var(--gold3)}
+.crumb h1{margin:2px 0 0;font-size:18px;color:var(--nav);letter-spacing:.5px}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.top-actions .icon-btn{width:40px;height:40px;border-radius:12px;border:1px solid #d6dbe4;background:#fff;color:var(--blue);font-size:16px;display:inline-flex;align-items:center;justify-content:center;transition:.18s}
+.top-actions .icon-btn:hover{background:#eff6ff;transform:translateY(-1px)}
+.role-chip{padding:6px 12px;border-radius:99px;font-size:10px;letter-spacing:2px;font-weight:700;border:1px solid #d6dbe4}
+.role-chip.admin{background:#fff7ed;color:#a87a05;border-color:#fde68a}
+.role-chip.user{background:#ecfdf5;color:#16c98d;border-color:#bbf7d0}
+
+.page{padding:24px 28px 100px;flex:1;position:relative;z-index:2}
+.hero{position:relative;
+  background:linear-gradient(135deg,rgba(37,99,235,.06),rgba(245,181,27,.06));
+  border:1px solid #e2e8f0;border-radius:24px;padding:28px;
+  box-shadow:0 20px 60px rgba(15,23,42,.04);overflow:hidden;margin-bottom:22px}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:center;position:relative;z-index:2}
+.hero-copy h2{margin:6px 0;font-size:42px;line-height:1.05;letter-spacing:-1px;color:var(--nav)}
+.hero-copy h2 em{font-style:normal;color:var(--gold)}
+.hero-copy p{margin:0 0 14px;color:#475569;font-size:14px;line-height:1.6}
+.eyebrow{font-size:10px;letter-spacing:3px;color:var(--gold3);font-weight:700}
+.quick{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.quick .primary{background:linear-gradient(180deg,var(--gold),var(--gold3));color:#1a1100;border:0;font-weight:600;padding:12px 18px;border-radius:12px}
+.quick .secondary{background:#fff;color:var(--nav);border:1px solid #d6dbe4;font-weight:600;padding:12px 18px;border-radius:12px}
+.living-stage{position:relative;min-height:340px;display:grid;place-items:center}
+.living-rose{width:min(360px,42vw);aspect-ratio:1;border-radius:50%;
+  background:url('./assets/rose-hero.png') center/cover no-repeat;
+  filter:drop-shadow(0 0 50px rgba(245,181,27,.65)) drop-shadow(0 0 100px rgba(245,181,27,.35));
+  animation:bloom 3.6s ease-in-out infinite}
+.rose-orbit{position:absolute;inset:0;pointer-events:none}
+.rose-orbit i{position:absolute;width:14px;height:14px;background:linear-gradient(180deg,var(--gold),var(--gold3));border-radius:50%;box-shadow:0 0 18px rgba(245,181,27,.7)}
+.rose-orbit i:nth-child(1){top:6%;left:14%;animation:ou 4s linear infinite}
+.rose-orbit i:nth-child(2){top:18%;right:8%;animation:ou 5s linear infinite reverse}
+.rose-orbit i:nth-child(3){bottom:18%;left:6%;animation:ou 6s linear infinite}
+.rose-orbit i:nth-child(4){bottom:6%;right:18%;animation:ou 5.5s linear infinite reverse}
+.rose-orbit i:nth-child(5){top:46%;left:3%;animation:ou 4.5s linear infinite reverse}
+.rose-orbit i:nth-child(6){top:42%;right:4%;animation:ou 6.5s linear infinite}
+@keyframes ou{0%{transform:translate(0,0) scale(1)}25%{transform:translate(20px,-30px) scale(1.2)}50%{transform:translate(-10px,15px) scale(.85)}75%{transform:translate(15px,25px) scale(1.1)}100%{transform:translate(0,0) scale(1)}}
+.flower-speech{position:absolute;right:-6px;top:30px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:10px 14px;font-size:13px;max-width:260px;box-shadow:0 12px 30px rgba(15,23,42,.08);color:var(--nav)}
+.wave{display:inline-flex;gap:2px;margin-right:6px;vertical-align:middle}
+.wave i{display:inline-block;width:3px;height:14px;background:var(--gold);border-radius:2px;animation:wv 1.2s ease-in-out infinite}
+.wave i:nth-child(2){animation-delay:.15s}.wave i:nth-child(3){animation-delay:.3s}.wave i:nth-child(4){animation-delay:.45s}.wave i:nth-child(5){animation-delay:.6s}
+@keyframes wv{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+
+/* ===== status feed ===== */
+.status-feed{position:fixed;left:300px;right:0;bottom:0;height:54px;background:rgba(255,255,255,.96);border-top:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;padding:0 28px;z-index:18;overflow:hidden;backdrop-filter:blur(14px)}
+.status-feed .badge{padding:6px 12px;border-radius:99px;background:linear-gradient(180deg,var(--gold),var(--gold3));color:#1a1100;font-size:10px;letter-spacing:2px;font-weight:800;flex-shrink:0}
+.status-feed .track{flex:1;overflow:hidden;position:relative}
+.status-feed .track-inner{display:flex;gap:36px;white-space:nowrap;animation:scroll 38s linear infinite}
+.status-feed .tick{padding:6px 0;font-size:13px;color:var(--text)}
+.status-feed .tick b{color:var(--blue);margin-right:6px}
+.status-feed .tick .ok{color:var(--green)}.status-feed .tick .warn{color:#a87a05}.status-feed .tick .err{color:var(--red)}.status-feed .tick .info{color:var(--blue)}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ===== metrics + cards ===== */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px;box-shadow:0 8px 20px rgba(15,23,42,.04);position:relative;overflow:hidden}
+.card.pink{border-color:rgba(245,181,27,.4)}
+.card .label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-weight:600}
+.card .value{font-size:28px;font-weight:700;color:var(--nav);letter-spacing:-.5px}
+.card .sub{font-size:12px;color:var(--muted);margin-top:4px}
+.panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.panel{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:20px;box-shadow:0 8px 20px rgba(15,23,42,.04)}
+.panel h3{margin:0 0 14px;font-size:14px;letter-spacing:1px;color:var(--nav);font-weight:700}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+
+.bar-row{display:grid;grid-template-columns:170px 1fr 70px;gap:10px;align-items:center;margin:8px 0;font-size:13px}
+.bar-row span{color:var(--muted)}
+.bar-row b{color:var(--nav);font-weight:600;text-align:right}
+.bar{background:#f1f5f9;height:8px;border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#fbbf24,#2563eb);border-radius:99px}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+table th,table td{padding:10px 12px;text-align:left;border-bottom:1px solid #e2e8f0}
+table th{font-size:11px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;font-weight:600;background:#f8fafc}
+table tr:hover td{background:#f8fafc}
+.tbl-wrap{background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;box-shadow:0 8px 20px rgba(15,23,42,.04)}
+.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;letter-spacing:1px;font-weight:600}
+.tag.ok{background:#dcfce7;color:#16c98d}.tag.warn{background:#fef3c7;color:#a87a05}
+.tag.err{background:#fee2e2;color:#dc2626}.tag.info{background:#dbeafe;color:#1d4ed8}
+
+.kpi-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.kpi-row button{padding:10px 16px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;color:#0f172a;font-weight:600}
+.kpi-row button.yes{background:linear-gradient(180deg,#16c98d,#0ea975);color:#fff;border:0}
+.kpi-row button.no{background:linear-gradient(180deg,var(--red),#a30015);color:#fff;border:0}
+.kpi-row button.partial{background:linear-gradient(180deg,var(--gold),var(--gold3));color:#1a1100;border:0}
+.kpi-row button.on{transform:scale(.96);box-shadow:0 0 0 3px rgba(245,181,27,.3)}
+
+.rec-area{display:flex;gap:10px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px}
+.rec-area .pulse{width:12px;height:12px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite;display:none}
+.rec-area.recording .pulse{display:inline-block}
+
+.dialog{position:fixed;inset:0;background:rgba(15,23,42,.65);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(8px);padding:20px}
+.dialog.on{display:flex}
+.dialog-card{width:min(560px,100%);max-height:88vh;overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:22px;padding:24px;box-shadow:0 30px 120px rgba(15,23,42,.35)}
+.dialog-card h3{margin:0 0 14px;font-size:18px;color:var(--nav)}
+
+.toast{position:fixed;left:50%;top:24px;transform:translate(-50%,-150%);background:linear-gradient(180deg,var(--gold),var(--gold3));color:#1a1100;padding:12px 22px;border-radius:99px;font-weight:700;font-size:13px;letter-spacing:1px;z-index:200;box-shadow:0 12px 40px rgba(245,181,27,.5);transition:transform .35s}
+.toast.show{transform:translate(-50%,0)}
+
+.upload-box{border:2px dashed #d6dbe4;border-radius:16px;padding:24px;text-align:center;color:var(--muted);font-size:13px;background:#f8fafc;transition:.18s;cursor:pointer}
+.upload-box:hover{border-color:var(--gold);background:#fffbeb}
+.upload-box b{color:var(--nav);display:block;margin-bottom:6px;font-size:15px}
+
+@media(max-width:1100px){.sidebar{width:260px}.main{margin-left:260px;width:calc(100% - 260px)}.grid{grid-template-columns:repeat(2,1fr)}.hero-grid{grid-template-columns:1fr}.living-rose{width:min(280px,46vw)}}
+@media(max-width:780px){
+  .sidebar{transform:translateX(-100%);transition:.3s;width:280px;z-index:50}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0;width:100%}
+  .menu{display:inline-block}
+  .page{padding:14px 12px 100px}
+  .grid{row-gap:10px}.row{grid-template-columns:1fr}.panel-grid{grid-template-columns:1fr}
+  .hero-copy h2{font-size:32px}
+  .living-stage{min-height:280px}.living-rose{width:min(220px,60vw)}
+  .topbar{padding:0 14px;height:62px}
+  .crumb h1{font-size:14px}
+  .status-feed{left:0;height:60px;padding:0 12px}
+  .status-feed .track-inner{animation-duration:24s}
+  .bar-row{grid-template-columns:1fr 1fr}.bar-row b{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"></div>
+<div class="rose-field"></div>
+<div class="petals" id="petals"></div>
+
+<!-- ==================== AUTH ==================== -->
+<div id="auth-screen" class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="logo-mark"></div>
+      <h1>RIZVI Management</h1>
+      <p>UNIFIED LIVING SYSTEM · HR · ADMIN · OPERATIONS</p>
+    </div>
+
+    <div class="tabs" id="auth-tabs">
+      <button data-tab="login" class="on">Sign in</button>
+      <button data-tab="signup">Sign up</button>
+      <button data-tab="forgot">Forgot</button>
+    </div>
+
+    <form id="login-form">
+      <div class="field"><label>Email / Mobile / Employee Code</label>
+        <input id="login-id" required placeholder="ssheraji@gmail.com or 017XXXXXXXX or AF1 0001" autocomplete="username">
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Admin uses <b>ssheraji@gmail.com</b> · Users register below</div>
+      </div>
+      <div class="field"><label>Password</label>
+        <input type="password" id="login-pass" required placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">▶ Sign in</button>
+      <p class="error" id="login-err"></p>
+    </form>
+
+    <form id="signup-form" style="display:none">
+      <div class="field"><label>Full Name</label><input id="su-name" required placeholder="Your full name"></div>
+      <div class="field"><label>Email <i style="color:var(--muted)">or</i> Mobile Number (one is required)</label>
+        <div class="row" style="gap:10px;margin-bottom:0"><input id="su-email" type="email" placeholder="name@example.com"><input id="su-phone" inputmode="tel" placeholder="017XXXXXXXX"></div>
+      </div>
+      <div class="field"><label>Password (min 6 chars)</label><input id="su-pass" type="password" required minlength="6"></div>
+      <div class="field"><label>Confirm Password</label><input id="su-pass2" type="password" required minlength="6"></div>
+      <div class="field"><label>Employee Code (optional but recommended)</label><input id="su-code" placeholder="AF1 0001"></div>
+      <button type="submit" class="btn btn-primary btn-block">✦ Create account</button>
+      <p class="success" id="signup-ok"></p><p class="error" id="signup-err"></p>
+    </form>
+
+    <form id="forgot-form" style="display:none">
+      <div class="field"><label>Recover by Email <i style="color:var(--muted)">or</i> Mobile</label><input id="fp-id" required placeholder="email or mobile"></div>
+      <button type="submit" class="btn btn-ghost btn-block">🔑 Generate Recovery Code</button>
+      <p class="success" id="fp-ok"></p><p class="error" id="fp-err"></p>
+      <div id="fp-reset" style="display:none">
+        <div class="field" style="margin-top:12px"><label>New Password</label><input id="fp-new" type="password"></div>
+        <button id="fp-set" type="button" class="btn btn-primary btn-block">Save new password</button>
+      </div>
+    </form>
+
+    <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--muted)">
+      Admin & users are <b style="color:var(--nav)">completely separate</b> — admin cannot log into user side.
+    </div>
+  </div>
+</div>
+
+<!-- ==================== APP SHELL ==================== -->
+<div id="app" class="app-shell" style="display:none">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><div style="font-size:22px">📊</div></div>
+      <div class="brand-text"><strong>RIZVI</strong><span>Management</span></div>
+    </div>
+    <div class="live-chip"><i></i>LIVE — system active</div>
+
+    <div id="navAdmin" style="display:none">
+      <div class="section-label">OVERVIEW</div>
+      <nav class="nav" id="navOverview"></nav>
+      <hr class="section-divider">
+      <div class="section-label">HUMAN RESOURCES</div>
+      <nav class="nav" id="navHR"></nav>
+      <hr class="section-divider">
+      <div class="section-label">OPERATIONS</div>
+      <nav class="nav" id="navOps"></nav>
+      <hr class="section-divider">
+      <div class="section-label">29 SECTIONS</div>
+      <nav class="nav" id="navSections"></nav>
+    </div>
+
+    <div id="navUser" style="display:none">
+      <div class="section-label">USER ZONE</div>
+      <nav class="nav" id="navUserItems"></nav>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="who">Signed in as <b id="whoName">—</b><div class="role" id="roleText">USER</div></div>
+      <button id="logoutBtn" class="btn btn-ghost btn-block btn-sm" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.12)">⎋ Logout</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="menu" id="menuBtn">☰</button>
+      <div class="crumb"><span id="crumbKicker">HOME</span><h1 id="crumbTitle">RIZVI</h1></div>
+      <div class="top-actions">
+        <span id="roleChip" class="role-chip user">USER</span>
+        <button class="icon-btn" id="voiceBtn" title="Voice narration">🔊</button>
+        <button class="icon-btn" id="topUpload" title="Upload / Import">＋</button>
+        <button class="icon-btn" id="topSettings" title="Settings">⚙</button>
+      </div>
+    </header>
+    <section class="page" id="page"></section>
+
+    <div class="status-feed">
+      <div class="badge">LIVE</div>
+      <div class="track"><div class="track-inner" id="statusTrack"></div></div>
+    </div>
+  </main>
+</div>
+
+<input type="file" id="globalFile" hidden multiple accept=".csv,.xlsx,.xls,.pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.mp4,.webm,.mp3,.wav,.txt">
+<div class="dialog" id="dialog"><div class="dialog-card" id="dialogBody"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ STATE ============ */
+const ADMIN_EMAIL='ssheraji@gmail.com';
+const ADMIN_PASS='Admin123456';
+const DB='rizvi_unified_v3';
+function loadDB(){try{return JSON.parse(localStorage.getItem(DB))||{}}catch(e){return {}}}
+function saveDB(d){localStorage.setItem(DB,JSON.stringify(d))}
+function ensureDB(){
+  let d=loadDB();
+  d.users=d.users||[];d.checks=d.checks||[];d.updates=d.updates||[];d.complaints=d.complaints||[];d.docs=d.docs||[];d.activity=d.activity||[];d.seq=d.seq||1;
+  if(!d.users.some(u=>u.role==='admin')){
+    d.users.push({id:'admin',name:'System Administrator',email:ADMIN_EMAIL,phone:'',code:'ADMIN',pass:hash(ADMIN_PASS),role:'admin',created:Date.now()});
+  }
+  // seed demo users so admin sees a populated system immediately (matches screenshots)
+  if(!d._seeded){
+    d._seeded=true;
+    const demo=[
+      {name:'Rahim Uddin',email:'rahim@rizvi.com',code:'AF1 0001'},
+      {name:'Karim Mia',email:'karim@rizvi.com',code:'AF1 0002'},
+      {name:'Sumi Akter',email:'sumi@rizvi.com',code:'AF1 0007'},
+    ];
+    demo.forEach(n=>d.users.push({id:nextId(),name:n.name,email:n.email,phone:'',code:n.code,pass:hash('Pass1234'),role:'user',created:Date.now()-86400000,blocked:false}));
+    // seed sample updates
+    d.updates=[
+      {id:nextId(),by:d.users[d.users.length-3].id,who:'Rahim Uddin',title:'Cutting line QA pass rate',status:'yes',note:'',files:[],ts:Date.now()-3600000},
+      {id:nextId(),by:d.users[d.users.length-2].id,who:'Karim Mia',title:'Sewing machine 7 oiling',status:'partial',note:'Filter stock short, replaced with FE-50.',files:[],ts:Date.now()-1800000},
+      {id:nextId(),by:d.users[d.users.length-1].id,who:'Sumi Akter',title:'Finishing line 3 rework',status:'no',note:'Operator absent this shift.',files:[],ts:Date.now()-900000},
+    ];
+  }
+  saveDB(d);return d;
+}
+function hash(s){let h=0;for(let i=0;i<s.length;i++)h=((h<<5)-h+s.charCodeAt(i))|0;return 'h_'+Math.abs(h).toString(36)+'_'+s.length}
+function nextId(){const d=ensureDB();d.seq++;saveDB(d);return 'r'+(d.seq-1)}
+function logActivity(kind,msg){const d=ensureDB();d.activity.unshift({id:nextId(),kind,msg,ts:Date.now()});d.activity=d.activity.slice(0,200);saveDB(d);pushStatus(kind,msg)}
+function num(n,d=0){return Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:d})}
+function money(n){return '৳'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:0})}
+function pct(n){return Number(n||0).toFixed(1)+'%'}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+/* ============ STATUS TICKER ============ */
+const statusTrack=[];
+function pushStatus(kind,msg){
+  statusTrack.unshift({kind:(kind==='ok'||kind==='warn'||kind==='err'||kind==='info')?kind:'info',msg:msg||''});
+  if(statusTrack.length>200) statusTrack.length=200;
+  if(statusTrack.length<30){
+    const s=['System online · 6,469 employees · 6,711 unique access IDs',
+      'Payroll reconciled · ৳10.61 Cr gross · ৳14.88 Cr net payable',
+      'Attendance rate 97.5% · 151,322 present · 3,876 absent',
+      'OT hours 4,62,000 ⚠ — review 72-hour compliance',
+      'Document vault sync OK · Admin and user sides fully isolated',
+      'New activity broadcast live across the dashboard'];
+    while(statusTrack.length<30) statusTrack.push({kind:'ok',msg:s[Math.floor(Math.random()*s.length)]});
+  }
+  renderStatus();
+}
+function renderStatus(){
+  const t=document.getElementById('statusTrack');if(!t) return;
+  const d=statusTrack.concat(statusTrack.slice(0,20));
+  t.innerHTML=d.map(s=>`<span class="tick"><b class="${s.kind==='ok'?'ok':s.kind==='warn'?'warn':s.kind==='err'?'err':'info'}">${({ok:'✓',warn:'⚠',err:'✗',info:'◆'})[s.kind]||'◆'}</b>${esc(s.msg)}</span>`).join('');
+}
+function startActivityPusher(){
+  let i=0;setInterval(()=>{
+    i++;
+    const x=['Tick · dashboard refresh','Heartbeat · '+new Date().toLocaleTimeString('en-GB'),'Rose bloomed · event captured','Auto-snapshot · #'+i];
+    pushStatus('ok',x[i%x.length]);
+  },8000);
+}
+
+/* ============ AUTH ============ */
+let SESSION=null;
+function setSession(w){SESSION=w;localStorage.setItem('rizvi_session_v3',JSON.stringify(w))}
+function getSession(){try{return JSON.parse(localStorage.getItem('rizvi_session_v3')||'null')}catch(e){return null}}
+function clearSession(){SESSION=null;localStorage.removeItem('rizvi_session_v3')}
+
+document.getElementById('auth-tabs').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#auth-tabs button').forEach(b=>b.classList.toggle('on',b===e.target));
+  const t=e.target.dataset.tab;
+  document.getElementById('login-form').style.display=(t==='login')?'':'none';
+  document.getElementById('signup-form').style.display=(t==='signup')?'':'none';
+  document.getElementById('forgot-form').style.display=(t==='forgot')?'':'none';
+});
+
+document.getElementById('login-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const id=document.getElementById('login-id').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-err');err.textContent='';
+  if(id.toLowerCase()===ADMIN_EMAIL.toLowerCase()){
+    if(pass===ADMIN_PASS){const d=ensureDB();const admin=d.users.find(u=>u.role==='admin');setSession({role:'admin',id:admin.id,name:admin.name});logActivity('info','Admin signed in');enterApp('admin');return;}
+    err.textContent='Admin password is incorrect.';return;
+  }
+  const d=ensureDB();
+  const u=d.users.find(x=>x.role==='user'&&(x.email===id||x.phone===id||x.code===id));
+  if(!u){err.textContent='No such user. Sign up first.';return}
+  if(u.pass!==hash(pass)){err.textContent='Wrong password.';return}
+  if(u.blocked){err.textContent='Access removed by admin.';return}
+  setSession({role:'user',id:u.id,name:u.name});
+  logActivity('ok','User '+u.name+' signed in');
+  enterApp('user');
+});
+
+document.getElementById('signup-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const name=document.getElementById('su-name').value.trim();
+  const email=document.getElementById('su-email').value.trim();
+  const phone=document.getElementById('su-phone').value.trim();
+  const pass=document.getElementById('su-pass').value;
+  const pass2=document.getElementById('su-pass2').value;
+  const code=document.getElementById('su-code').value.trim();
+  const err=document.getElementById('signup-err');const ok=document.getElementById('signup-ok');
+  err.textContent='';ok.textContent='';
+  if(!name){err.textContent='Name required.';return}
+  if(!email && !phone){err.textContent='Provide email OR mobile.';return}
+  if(email && email.toLowerCase()===ADMIN_EMAIL.toLowerCase()){err.textContent='Email reserved for admin.';return}
+  if(pass!==pass2){err.textContent='Passwords do not match.';return}
+  if(pass.length<6){err.textContent='Password too short.';return}
+  const d=ensureDB();
+  if(email && d.users.some(x=>x.email===email)){err.textContent='Email already registered.';return}
+  if(phone && d.users.some(x=>x.phone===phone)){err.textContent='Mobile already registered.';return}
+  d.users.push({id:nextId(),name,email,phone,code,pass:hash(pass),role:'user',created:Date.now(),blocked:false});saveDB(d);
+  ok.textContent='Account created. You can sign in now.';
+  logActivity('ok','New user signed up: '+name);
+  setTimeout(()=>document.querySelector('#auth-tabs [data-tab=login]').click(),1000);
+});
+
+document.getElementById('forgot-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const id=document.getElementById('fp-id').value.trim();
+  const err=document.getElementById('fp-err');const ok=document.getElementById('fp-ok');
+  err.textContent='';ok.textContent='';
+  const d=ensureDB();const u=d.users.find(x=>x.email===id||x.phone===id||x.code===id);
+  if(!u){err.textContent='User not found.';return}
+  const code=Math.floor(100000+Math.random()*900000);u._recovery=code;saveDB(d);
+  ok.textContent='Recovery code (demo, no SMS gateway): '+code;
+  document.getElementById('fp-reset').style.display='';
+  document.getElementById('fp-set').onclick=()=>{
+    const np=document.getElementById('fp-new').value;
+    if(!np||np.length<6){err.textContent='New password must be at least 6 chars.';return}
+    u.pass=hash(np);delete u._recovery;saveDB(d);
+    ok.textContent='Password updated. Please sign in.';
+    setTimeout(()=>document.querySelector('#auth-tabs [data-tab=login]').click(),1200);
+  };
+});
+
+/* ============ NAVIGATION ============ */
+const ADMIN_OVERVIEW=[{id:'dashboard',icon:'▣',title:'Dashboard'}];
+const ADMIN_HR=[
+  {id:'people',icon:'👤',title:'Employees'},
+  {id:'attendance',icon:'◷',title:'Attendance'},
+  {id:'payroll',icon:'৳',title:'Payroll'},
+  {id:'kpi',icon:'✓',title:'Performance'},
+  {id:'complaints',icon:'✉',title:'Complaints'},
+  {id:'updates',icon:'⚡',title:'Work Updates'},
+];
+const ADMIN_OPS=[
+  {id:'production',icon:'🏭',title:'Production'},
+  {id:'quality',icon:'✔',title:'Quality'},
+  {id:'merchandising',icon:'🧵',title:'Merchandising'},
+  {id:'maintenance',icon:'🛠',title:'Maintenance'},
+];
+const SECTIONS=[
+  {id:'sec-all',title:'All Sections',badge:29},
+  {id:'sec-sewing',title:'Sewing',badge:3417},
+  {id:'sec-finishing',title:'Finishing',badge:808},
+  {id:'sec-cutting',title:'Cutting',badge:602},
+  {id:'sec-sewing-quality',title:'Sewing Quality',badge:291},
+  {id:'sec-adminhr',title:'Admin HR & Compliance',badge:167},
+  {id:'sec-store',title:'Store',badge:165},
+  {id:'sec-finishing-quality',title:'Finishing Quality',badge:143},
+  {id:'sec-sample',title:'Sample',badge:112},
+  {id:'sec-cutting-quality',title:'Cutting Quality',badge:100},
+  {id:'sec-receive',title:'Receive',badge:62},
+  {id:'sec-mechanical',title:'Mechanical',badge:54},
+  {id:'sec-quality',title:'Quality',badge:53},
+  {id:'sec-quality-receive',title:'Quality Receive',badge:50},
+  {id:'sec-marketing',title:'Marketing & Merch',badge:39},
+  {id:'sec-security',title:'Security',badge:37},
+  {id:'sec-store-quality',title:'Store Quality',badge:31},
+  {id:'sec-qa-audit',title:'QA Audit',badge:30},
+  {id:'sec-electrical',title:'Electrical',badge:27},
+  {id:'sec-ie',title:'IE',badge:24},
+];
+const USER_NAV=[
+  {id:'home',icon:'✦',title:'Home'},
+  {id:'updates',icon:'⚡',title:'My Updates'},
+  {id:'kpi',icon:'✓',title:'Daily Task'},
+  {id:'complaints',icon:'✉',title:'Complaint / Suggestion'},
+  {id:'attendance',icon:'◷',title:'My Attendance'},
+  {id:'hours',icon:'◐',title:'My Working Hours'},
+  {id:'documents',icon:'▣',title:'My Documents'},
+  {id:'settings',icon:'⚙',title:'Settings'},
+];
+
+function buildNav(role){
+  const o=document.getElementById('navOverview');
+  const h=document.getElementById('navHR');
+  const p=document.getElementById('navOps');
+  const s=document.getElementById('navSections');
+  const u=document.getElementById('navUserItems');
+  const allNavs=[];
+  if(role==='admin'){
+    document.getElementById('navAdmin').style.display='';
+    document.getElementById('navUser').style.display='none';
+    fillNav(o,ADMIN_OVERVIEW);
+    fillNav(h,ADMIN_HR);
+    fillNav(p,ADMIN_OPS);
+    fillNav(s,SECTIONS);
+    allNavs.push(o,h,p,s);
+  }else{
+    document.getElementById('navAdmin').style.display='none';
+    document.getElementById('navUser').style.display='';
+    fillNav(u,USER_NAV);
+    allNavs.push(u);
+  }
+  // wire once
+  allNavs.forEach(n=>{
+    n.querySelectorAll('.nav-item').forEach(b=>{
+      b.onclick=()=>{
+        CURRENT_PAGE=b.dataset.page;
+        document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('on',x===b));
+        renderPage();
+        document.getElementById('sidebar').classList.remove('open');
+      };
+    });
+  });
+}
+function fillNav(container,items){
+  container.innerHTML='';
+  items.forEach(it=>{
+    const b=document.createElement('button');
+    b.className='nav-item';b.dataset.page=it.id;
+    b.innerHTML=`<span class="ic">${it.icon||''}</span><span>${it.title}</span>${it.badge?`<span class="badge">${it.badge}</span>`:''}`;
+    container.appendChild(b);
+  });
+}
+
+let CURRENT_PAGE='dashboard';
+function enterApp(role){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='';
+  document.getElementById('roleChip').textContent=role.toUpperCase();
+  document.getElementById('roleChip').className='role-chip '+(role==='admin'?'admin':'user');
+  document.getElementById('whoName').textContent=SESSION.name||'—';
+  document.getElementById('roleText').textContent=role.toUpperCase();
+  document.getElementById('roleText').className='role '+(role==='admin'?'admin':'');
+  buildNav(role);
+  CURRENT_PAGE=(role==='admin')?'dashboard':'home';
+  renderPage();
+  renderStatus();startActivityPusher();
+  setInterval(()=>document.querySelectorAll('.live-chip').forEach(el=>{el.innerHTML='<i></i> '+new Date().toLocaleTimeString('en-GB')}),1000);
+  document.getElementById('menuBtn').onclick=()=>document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('logoutBtn').onclick=()=>{clearSession();logActivity('info','Signed out');showAuth()};
+  document.getElementById('topUpload').onclick=()=>openUpload();
+  document.getElementById('topSettings').onclick=()=>navigate('settings');
+  document.getElementById('voiceBtn').onclick=()=>speak('Rizvi family unified living dashboard is alive.');
+}
+
+function showAuth(){
+  document.getElementById('auth-screen').style.display='';
+  document.getElementById('app').style.display='none';
+  renderStatus();startActivityPusher();
+}
+
+function navigate(p){CURRENT_PAGE=p;renderPage();document.getElementById('sidebar').classList.remove('open')}
+
+/* ============ PAGES ============ */
+const SESS={employees:6469,payroll:6339,machine:169384,unique:6711,gross:106097774,net:148791903,ot:41269286,present:151322,absent:3876,attendanceRate:97.5};
+
+function kpiCards(){
+  return `<div class="grid">
+    <div class="card pink"><div class="label">Master Employees</div><div class="value">${num(SESS.employees)}</div><div class="sub">from imported HR dataset</div></div>
+    <div class="card pink"><div class="label">Payroll Population</div><div class="value">${num(SESS.payroll)}</div><div class="sub">monthly active pay-slips</div></div>
+    <div class="card pink"><div class="label">Machine Log Events</div><div class="value">${num(SESS.machine)}</div><div class="sub">${num(SESS.unique)} unique IDs</div></div>
+    <div class="card pink"><div class="label">Attendance Rate</div><div class="value">${pct(SESS.attendanceRate)}</div><div class="sub">${num(SESS.present)} present</div></div>
+    <div class="card"><div class="label">Gross Salary Σ</div><div class="value">${money(SESS.gross)}</div></div>
+    <div class="card"><div class="label">Net Payable Σ</div><div class="value">${money(SESS.net)}</div></div>
+    <div class="card"><div class="label">OT Amount Σ</div><div class="value">${money(SESS.ot)}</div></div>
+    <div class="card"><div class="label">Active Users</div><div class="value">${num(ensureDB().users.filter(u=>u.role==='user').length)}</div><div class="sub">${num(ensureDB().updates.length)} update posts</div></div>
+  </div>`;
+}
+
+function heroSection(opts){
+  const {title,copy,speech='I am your living executive flower. The data is awake.'}=opts||{};
+  return `<div class="hero"><div class="hero-grid">
+    <div class="hero-copy"><div class="eyebrow">RIZVI FAMILY · LIVING INTELLIGENCE</div>
+      <h2>${title||'Lead.<br>Control.<br><em>Grow.</em>'}</h2>
+      <p>${copy||''}</p>
+      <div class="quick">
+        <button class="primary" onclick="openUpload()">＋ Upload / Import</button>
+        <button class="secondary" onclick="navigate('reports')">Open Live Reports</button>
+        <button class="secondary" onclick="navigate('settings')">Settings</button>
+      </div>
+    </div>
+    <div class="living-stage">
+      <div class="rose-orbit"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="living-rose"></div>
+      <div class="flower-speech"><span class="wave"><i></i><i></i><i></i><i></i><i></i></span>${esc(speech)}</div>
+    </div>
+  </div></div>`;
+}
+
+const HERO_DEPTS=[
+  {name:'Production',emp:4987,gross:78637960,ot:33254126},
+  {name:'Quality Assurance',emp:698,gross:11758999,ot:4888382},
+  {name:'Admin HR & Compliance',emp:228,gross:4370065,ot:1143087},
+  {name:'Marketing & Merchandising',emp:172,gross:5041428,ot:790610},
+  {name:'Store',emp:168,gross:2939488,ot:1167671},
+  {name:'Accounts & Finance',emp:24,gross:917000,ot:0},
+  {name:'IE',emp:24,gross:997900,ot:0},
+  {name:'Commercial',emp:13,gross:554000,ot:0},
+  {name:'Audit',emp:13,gross:400414,ot:0},
+];
+
+const PAGES={
+dashboard:()=>heroSection({title:'Lead.<br>Control.<br><em>Grow.</em>',
+  copy:'Employee Master, Salary, Machine Logs and Working Hours datasets are already imported. The roses breathe, glow and speak while the numbers remain the focus.',
+  speech:'I am your living executive flower. The data is awake.'})+kpiCards()+`
+  <div class="panel-grid">
+    <div class="panel"><h3>Workforce by Department</h3>
+      ${HERO_DEPTS.slice(0,7).map(d=>{const max=4987;const w=Math.max(4,Math.min(100,(d.emp/max)*100));
+        return `<div class="bar-row"><span>${esc(d.name)}</span><div class="bar"><i style="width:${w}%"></i></div><div><b>${num(d.emp)}</b></div></div>`}).join('')}
+    </div>
+    <div class="panel"><h3>Live System Events</h3>
+      <div class="tbl-wrap"><table><thead><tr><th>When</th><th>Event</th><th>Status</th></tr></thead><tbody>
+      ${ensureDB().activity.slice(0,6).map(a=>`<tr><td>${new Date(a.ts).toLocaleTimeString('en-GB')}</td><td>${esc(a.msg)}</td><td><span class="tag ${a.kind==='ok'?'ok':a.kind==='warn'?'warn':a.kind==='err'?'err':'info'}">${({ok:'OK',warn:'WARN',err:'ERR',info:'INFO'})[a.kind]||'INFO'}</span></td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--muted)">Quiet</td></tr>'}
+      </tbody></table></div>
+    </div>
+  </div>`,
+people:()=>heroSection({title:'People<br>in <em>Motion.</em>',copy:`Imported workforce master: ${num(SESS.employees)} records. Payroll population: ${num(SESS.payroll)}. Department intelligence is ready.`})+kpiCards(),
+payroll:()=>heroSection({title:'Payroll<br><em>Control.</em>',copy:`Gross ${money(SESS.gross)}, net ${money(SESS.net)}, overtime ${money(SESS.ot)}.`})+`
+  <div class="tbl-wrap"><table><thead><tr><th>Department</th><th>Employees</th><th>Gross Σ</th><th>OT Σ</th></tr></thead><tbody>
+  ${HERO_DEPTS.map(d=>`<tr><td>${esc(d.name)}</td><td>${num(d.emp)}</td><td>${money(d.gross)}</td><td>${money(d.ot)}</td></tr>`).join('')}
+  </tbody></table></div>`,
+attendance:()=>heroSection({title:'Attendance<br><em>Intelligence.</em>',copy:`${num(SESS.machine)} log events · attendance rate ${pct(SESS.attendanceRate)}.`})+kpiCards(),
+hours:()=>heroSection({title:'Working Hours<br><em>Control.</em>',copy:'Weekly baseline 48 h, governance limit 72 h. Yellow at 72:00:00; red above.',speech:'I glow brighter when exceptions are controlled.'})+`
+  <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card pink"><div class="label">Below 48h · Safe</div><div class="value">5,184</div></div>
+    <div class="card pink"><div class="label">48h — 72h · Monitor</div><div class="value">812</div></div>
+    <div class="card pink"><div class="label">Above 72h · Action</div><div class="value">22</div></div>
+  </div>`,
+kpi:()=>`${heroSection({title:'Yes. No. Partial.<br><em>with context.</em>',copy:'Daily task reporting — Yes / No / Partial. When Partial, a reason note is mandatory.',
+  speech:'Tell me your progress. Partial needs a reason.'})}
+  <div class="row">
+    <div class="panel">
+      <h3>Submit a Daily Update</h3>
+      <form id="kpiForm">
+        <div class="field"><label>Task title</label><input id="k-title" required placeholder="e.g. Cutting line QA pass rate"></div>
+        <div class="field"><label>Description (optional)</label><textarea id="k-desc" rows="2" placeholder="1-2 sentences on what was done"></textarea></div>
+        <div class="field"><label>Status</label>
+          <div class="kpi-row" id="kpiRow">
+            <button type="button" class="yes" data-val="yes">✓ Yes — Done</button>
+            <button type="button" class="no" data-val="no">✗ No — Not done</button>
+            <button type="button" class="partial" data-val="partial">⚠ Partial</button>
+          </div>
+          <input type="hidden" id="k-status" value="yes">
+        </div>
+        <div class="field" id="k-noteWrap" style="display:none"><label>Reason for partial (mandatory)</label><textarea id="k-note" rows="2"></textarea></div>
+        <div class="field"><label>Attach files (image / audio / video / DOCX / PDF / XLSX / CSV)</label>
+          <input type="file" id="k-files" multiple accept="image/*,audio/*,video/*,.doc,.docx,.pdf,.xls,.xlsx,.csv,.txt"></div>
+        <button class="btn btn-primary" type="submit">▶ Submit update</button>
+      </form>
+    </div>
+    <div class="panel"><h3>Today's updates</h3><div id="kpiMine"></div></div>
+  </div>`,
+production:()=>heroSection({title:'Production<br><em>Control.</em>',copy:'Line-level plan → target → actual → gap → loss → recovery plan.'})+
+  `<div class="grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="card"><div class="label">Target</div><div class="value">9,90,000</div><div class="sub">pcs / month</div></div>
+    <div class="card pink"><div class="label">Actual</div><div class="value">9,42,318</div><div class="sub">95.2% of target</div></div>
+    <div class="card"><div class="label">Achievement %</div><div class="value">95.2%</div></div>
+    <div class="card"><div class="label">Loss</div><div class="value">47,682</div><div class="sub">recovery plan active</div></div>
+  </div>`,
+quality:()=>heroSection({title:'Quality<br><em>Assurance.</em>',copy:'Internal rejections, AQL inspection and buyer-side audit snapshots.'})+
+  `<div class="grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card"><div class="label">Internal Reject %</div><div class="value">2.4%</div></div>
+    <div class="card pink"><div class="label">Buyer Audit Pass</div><div class="value">98.7%</div></div>
+    <div class="card"><div class="label">Open QC Issues</div><div class="value">14</div></div>
+  </div>`,
+merchandising:()=>heroSection({title:'Merchandising<br><em>Flow.</em>',copy:'Buyer-wise order book, shipment status and on-time delivery.'})+`
+  <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card"><div class="label">Active Buyers</div><div class="value">34</div></div>
+    <div class="card"><div class="label">Open POs</div><div class="value">128</div></div>
+    <div class="card pink"><div class="label">OTD %</div><div class="value">94.1%</div></div>
+  </div>`,
+maintenance:()=>heroSection({title:'Maintenance<br><em>Status.</em>',copy:'Machine uptime, scheduled downtime and breakdown tickets.'})+`
+  <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card"><div class="label">Machine Uptime</div><div class="value">93.2%</div></div>
+    <div class="card"><div class="label">Scheduled Downtime</div><div class="value">4.1%</div></div>
+    <div class="card pink"><div class="label">Open Tickets</div><div class="value">6</div></div>
+  </div>`,
+updates:()=>{
+  const d=ensureDB();const list=d.updates;
+  return `${heroSection({title:'Every update<br><em>in one place.</em>',
+    copy:(SESSION.role==='admin'?'Review, edit or remove any user update.':'Your daily reports land here. Admin reviews each one.'),
+    speech:'Updates keep the dashboard alive.'})}
+  <div class="tbl-wrap"><table><thead><tr><th>When</th><th>From</th><th>Title</th><th>Status</th><th>Note</th><th></th></tr></thead><tbody>
+  ${list.length?list.map(u=>`<tr><td>${new Date(u.ts).toLocaleString('en-GB')}</td><td>${esc(u.who)}</td><td>${esc(u.title||'-')}</td><td><span class="tag ${u.status==='yes'?'ok':u.status==='no'?'err':'warn'}">${esc(u.status)}</span></td><td>${esc(u.note||'-')}</td><td>${SESSION.role==='admin'?`<button class="btn btn-sm btn-danger" onclick="delUpdate('${u.id}')">Delete</button>`:''}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted)">No updates yet</td></tr>'}
+  </tbody></table></div>`;
+},
+complaints:()=>{
+  const d=ensureDB();const list=d.complaints;
+  return `${heroSection({title:'A voice that<br><em>is heard.</em>',copy:'Complaints, suggestions, applications with voice / image / video / document. Admin reviews every item.',speech:'Speak freely. Admin will review.'})}
+  <div class="row">
+    <div class="panel"><h3>New submission</h3>
+      <form id="cf">
+        <div class="field"><label>Type</label><select name="type"><option>Complaint</option><option>Suggestion</option><option>Application</option></select></div>
+        <div class="field"><label>Subject</label><input name="subject" required></div>
+        <div class="field"><label>Details</label><textarea name="body" rows="3"></textarea></div>
+        <div class="field"><label>Voice / Audio recording</label>
+          <div class="rec-area" id="recArea">
+            <button type="button" class="btn btn-primary btn-sm" id="recStart">⏺ Record</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="recStop">⏹ Stop</button>
+            <audio id="preview" controls></audio>
+            <span class="pulse"></span>
+          </div>
+          <input type="hidden" name="audio_data" id="audioData">
+        </div>
+        <div class="row"><div class="field"><label>Image</label><input type="file" name="img" accept="image/*"></div>
+        <div class="field"><label>Video</label><input type="file" name="vid" accept="video/*"></div></div>
+        <div class="row"><div class="field"><label>DOCX / PDF / TXT</label><input type="file" name="doc" accept=".doc,.docx,.pdf,.txt"></div>
+        <div class="field"><label>Excel / CSV</label><input type="file" name="xls" accept=".xls,.xlsx,.csv"></div></div>
+        <button class="btn btn-primary" type="submit">▶ Submit</button>
+      </form>
+    </div>
+    <div class="panel"><h3>${SESSION.role==='admin'?'All submissions':'My submissions'}</h3>
+      <div class="tbl-wrap"><table><thead><tr><th>Type</th><th>Subject</th><th>Status</th><th>When</th><th></th></tr></thead><tbody>
+      ${(SESSION.role==='admin'?list:list.filter(c=>c.by===SESSION.id)).length?(SESSION.role==='admin'?list:list.filter(c=>c.by===SESSION.id)).map(c=>`<tr><td>${esc(c.type)}</td><td>${esc(c.subject)}</td><td><span class="tag ${c.status==='resolved'?'ok':'warn'}">${esc(c.status)}</span></td><td>${new Date(c.ts).toLocaleString('en-GB')}</td>${SESSION.role==='admin'?`<td><button class="btn btn-sm btn-primary" onclick="resolveComp('${c.id}')">Resolve</button></td>`:'<td></td>'}</tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--muted)">Nothing yet</td></tr>'}
+      </tbody></table></div>
+    </div>
+  </div>`;
+},
+users:()=>{
+  if(SESSION.role!=='admin') return `<div class="card"><h3>Forbidden</h3><p>Admin only.</p></div>`;
+  const d=ensureDB();
+  return `${heroSection({title:'User<br><em>management.</em>',copy:'Create user accounts, delete them, or toggle access. Master Employee Sheet import is in Settings.',speech:'Users come and go. The dashboard never blinks.'})}
+  <div class="row">
+    <div class="panel"><h3>Add a user manually</h3>
+      <form id="addUserForm">
+        <div class="field"><label>Name</label><input id="au-name" required></div>
+        <div class="field"><label>Email</label><input id="au-email" type="email" required></div>
+        <div class="field"><label>Employee code</label><input id="au-code" placeholder="AF1 0001"></div>
+        <div class="field"><label>Initial password</label><input id="au-pass" required minlength="6"></div>
+        <button class="btn btn-primary" type="submit">＋ Add user</button>
+      </form>
+    </div>
+    <div class="panel"><h3>All users (${d.users.length})</h3>
+      <div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Email/Code</th><th>Role</th><th>Status</th><th>Created</th><th></th></tr></thead><tbody>
+      ${d.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.email||u.phone||u.code||'—')}</td><td>${esc(u.role)}</td><td>${u.role==='admin'?'<span class="tag info">admin</span>':u.blocked?'<span class="tag err">blocked</span>':'<span class="tag ok">active</span>'}</td><td>${new Date(u.created).toLocaleDateString('en-GB')}</td>
+      <td>${u.role!=='admin'?`<button class="btn btn-sm btn-ghost" onclick="toggleUser('${u.id}')">${u.blocked?'Unblock':'Block'}</button><button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')">Delete</button>`:'-'}</td></tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  </div>`;
+},
+documents:()=>{
+  const d=ensureDB();
+  return `${heroSection({title:'Every file.<br>One <em>truth.</em>',copy:'Upload from any page — DOCX, PDF, XLSX, CSV, image, audio, video.'})}
+  <div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Size</th><th>Type</th><th>By</th><th>When</th><th></th></tr></thead><tbody>
+  ${d.docs.length?d.docs.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.size)}</td><td>${esc(x.type||'file')}</td><td>${esc(x.by||'-')}</td><td>${new Date(x.ts).toLocaleString('en-GB')}</td><td>${SESSION.role==='admin'?`<button class="btn btn-sm btn-danger" onclick="delDoc('${x.id}')">Delete</button>`:''}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted)">No documents uploaded yet · press ＋ above or open Settings → master-sheet import</td></tr>'}
+  </tbody></table></div>`;
+},
+reports:()=>`<div class="hero"><div class="hero-grid">
+  <div class="hero-copy"><div class="eyebrow">CROSSCUT REPORT</div>
+    <h2>Numbers<br><em>at a glance.</em></h2>
+    <p>Department, payroll, attendance and overtime report — all from imported sources and live user updates.</p></div>
+  <div class="living-stage">
+    <div class="rose-orbit"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="living-rose"></div>
+    <div class="flower-speech"><span class="wave"><i></i><i></i><i></i><i></i><i></i></span>Numbers keep the rose spinning.</div>
+  </div>
+</div></div>
+${kpiCards()}
+<div class="panel"><h3>Department ranking</h3>
+${HERO_DEPTS.map(d=>{const max=4987;const w=Math.max(4,Math.min(100,(d.emp/max)*100));return `<div class="bar-row"><span>${esc(d.name)}</span><div class="bar"><i style="width:${w}%"></i></div><div><b>${num(d.emp)}</b></div></div>`}).join('')}
+</div>`,
+settings:()=>`${heroSection({title:'Settings &<br><em>Import.</em>',copy:'Master Employee sheets (CSV / XLSX) · Policies · Training · Salary · Working Hours. Wipe local DB· Backup.',speech:'Tune the house the way you want it.'})}
+<div class="row">
+  <div class="panel">
+    <h3>Master-sheet Import</h3>
+    <p style="font-size:13px;color:var(--muted)">Upload any CSV / XLSX / PDF / DOCX / image / audio / video.</p>
+    <div class="upload-box" onclick="openUpload()"><b>＋ Click to Upload</b>CSV · XLSX · PDF · DOCX · image · audio · video</div>
+    <div class="row" style="margin-top:14px"><button class="btn btn-ghost" onclick="wipeLocal()">Wipe local DB</button><button class="btn btn-ghost" onclick="exportLocal()">Export backup</button></div>
+  </div>
+  <div class="panel">
+    <h3>Backend status</h3>
+    <p style="font-size:13px;color:var(--muted)">Runs an <b>offline-first</b> localStorage database — zero setup, works on GitHub Pages / Netlify Drop / any static host.</p>
+    <p style="font-size:12px">To plug into a live free BaaS (Supabase / Firebase), replace 4 helpers in <code>&lt;script&gt;</code>: <code>loadDB/saveDB/ensureDB/pushStatus</code>.</p>
+    <div class="upload-box" style="text-align:left;cursor:default"><b>Active mode</b><span class="tag ok">LOCAL · OFFLINE-FIRST</span></div>
+  </div>
+</div>`,
+home:()=>{
+  const d=ensureDB();const mine=d.updates.filter(u=>u.by===SESSION.id);
+  return `${heroSection({title:'Hello,<br><em>${esc(SESSION.name)}.</em>',copy:'Submit your daily update with Yes / No / Partial. Attach Word, PDF, Excel, CSV, images, video or audio.',speech:'It is safe to speak here.'})}
+  <div class="row">
+    <div class="card pink"><div class="label">Your updates</div><div class="value">${num(mine.length)}</div></div>
+    <div class="card"><div class="label">Today's KPI Yes</div><div class="value">${num(mine.filter(u=>u.status==='yes').length)} ✓</div><div class="sub">finish a few more for the rose to bloom brighter</div></div>
+  </div>
+  <div class="panel-grid">
+    <div class="panel"><h3>Quick action</h3>
+      <div class="quick" style="margin-top:6px">
+        <button class="primary" onclick="navigate('kpi')">✎ Submit update</button>
+        <button class="secondary" onclick="navigate('complaints')">✉ Voice a concern</button>
+      </div>
+    </div>
+    <div class="panel"><h3>Recent system events</h3>
+      <div class="tbl-wrap"><table><thead><tr><th>When</th><th>Event</th></tr></thead><tbody>
+      ${d.activity.slice(0,6).map(a=>`<tr><td>${new Date(a.ts).toLocaleTimeString('en-GB')}</td><td>${esc(a.msg)}</td></tr>`).join('')||'<tr><td colspan="2" style="text-align:center;color:var(--muted)">Quiet</td></tr>'}
+      </tbody></table></div>
+    </div>
+  </div>`;
+}
+};
+
+/* ============ RENDER ============ */
+function renderPage(){
+  const p=CURRENT_PAGE;
+  document.querySelectorAll('.nav-item').forEach(x=>{x.classList.toggle('on',x.dataset.page===p)});
+  const titleMap={
+    dashboard:['EXECUTIVE CONTROL CENTER','RIZVI-MANAGEMENT','The house of Rizvi is awake. Data is flowing.'],
+    people:['PEOPLE & TALENT','PEOPLE / HR','People intelligence is alive.'],
+    payroll:['PAYROLL CONTROL','PAYROLL','Payroll signals ready.'],
+    attendance:['ATTENDANCE INTELLIGENCE','ATTENDANCE','Activity visible.'],
+    hours:['WORKING HOURS CONTROL','WORKING HOURS','Exceptions highlighted.'],
+    kpi:['KPI & DAILY CHECKLIST','DAILY TASK','Daily Yes / No / Partial updates.'],
+    updates:['USER UPDATES','UPDATES','Every update from every user.'],
+    complaints:['EMPLOYEE VOICE','COMPLAINTS','Complaints & suggestions.'],
+    documents:['DOCUMENT CONTROL','DOCUMENTS','Every uploaded file.'],
+    reports:['MANAGEMENT REPORTS','REPORTS','Department trends.'],
+    users:['USER MANAGEMENT','USERS','Add / Block / Delete users.'],
+    settings:['SYSTEM CONTROL','SETTINGS','App settings & imports.'],
+    home:['HELLO '+SESSION.name.toUpperCase(),'USER HOME','Submit your update — partial requires a note.'],
+    production:['PRODUCTION','PRODUCTION','Daily production control.'],
+    quality:['QUALITY','QUALITY','QA dashboards.'],
+    merchandising:['MERCHANDISING','MERCHANDISING','Buyer order flow.'],
+    maintenance:['MAINTENANCE','MAINTENANCE','Machine uptime.'],
+  };
+  const k=titleMap[p]||['RIZVI','RIZVI','Rizvi unified living dashboard'];
+  document.getElementById('crumbKicker').textContent=k[0];
+  document.getElementById('crumbTitle').textContent=k[1];
+  const page=document.getElementById('page');
+  page.innerHTML=PAGES[p]?PAGES[p]():`<div class="card"><h3>Coming up</h3><p>${k[2]}</p></div>`;
+  speak(k[2]);
+  bindPage(p);
+}
+function bindPage(p){
+  const kf=document.getElementById('kpiForm');
+  if(kf) kf.onsubmit=e=>submitUpdate(e);
+  if(p==='kpi') initKpiPage();
+  const cf=document.getElementById('cf');
+  if(cf) cf.onsubmit=e=>submitComplaint(e);
+  const auf=document.getElementById('addUserForm');
+  if(auf) auf.onsubmit=e=>addUser(e);
+  if(p==='kpi'||p==='home') renderKpiMine();
+}
+function initKpiPage(){
+  const row=document.getElementById('kpiRow');const status=document.getElementById('k-status');
+  const noteWrap=document.getElementById('k-noteWrap');
+  let chosen='yes';
+  row.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    chosen=b.dataset.val;status.value=chosen;
+    row.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    noteWrap.style.display=(chosen==='partial')?'':'none';
+  });
+  row.querySelector('[data-val=yes]').classList.add('on');
+}
+function submitUpdate(e){
+  e.preventDefault();
+  const title=document.getElementById('k-title').value.trim();
+  const desc=document.getElementById('k-desc').value.trim();
+  const status=document.getElementById('k-status').value;
+  const note=document.getElementById('k-note').value.trim();
+  if(!title){t('Title required');return}
+  if(status==='partial' && !note){t('Partial needs a reason note');return}
+  const files=document.getElementById('k-files');
+  const farr=files.files;const items=[];
+  let pending=farr.length||0;
+  if(!pending){add(items);return}
+  for(let i=0;i<farr.length;i++){
+    const f=farr[i];const r=new FileReader();
+    r.onload=()=>{items.push({name:f.name,size:formatBytes(f.size),type:f.type});pending--;if(pending===0)add(items)};
+    r.readAsDataURL(f);
+  }
+  function add(items){
+    const d=ensureDB();
+    const u={id:nextId(),by:SESSION.id,who:SESSION.name,title,desc,status,note,files:items,ts:Date.now()};
+    d.updates.unshift(u);saveDB(d);
+    logActivity('ok','Update: '+u.title+' ['+status+']');
+    t('Update submitted');
+    document.getElementById('k-title').value='';document.getElementById('k-desc').value='';document.getElementById('k-note').value='';
+    renderKpiMine();
+    if(SESSION.role==='admin') navigate('updates');
+  }
+}
+function renderKpiMine(){
+  if(SESSION.role==='admin') return;
+  const d=ensureDB();const mine=d.updates.filter(u=>u.by===SESSION.id);
+  const el=document.getElementById('kpiMine');
+  if(!el) return;
+  el.innerHTML=mine.length?`<div class="tbl-wrap"><table><thead><tr><th>When</th><th>Title</th><th>Status</th></tr></thead><tbody>${mine.slice(0,8).map(u=>`<tr><td>${new Date(u.ts).toLocaleString('en-GB')}</td><td>${esc(u.title)}</td><td><span class="tag ${u.status==='yes'?'ok':u.status==='no'?'err':'warn'}">${u.status}</span></td></tr>`).join('')}</tbody></table></div>`:'<p style="color:var(--muted);font-size:13px">No updates yet — submit one above.</p>';
+}
+function submitComplaint(e){
+  e.preventDefault();
+  const fd=new FormData(e.target);
+  const audio=fd.get('audio_data')||'';
+  const attachments=[];
+  [['img','image'],['vid','video'],['doc','document'],['xls','spreadsheet']].forEach(([k,kind])=>{
+    const f=fd.get(k);if(f && f.size){attachments.push({name:f.name,kind,size:formatBytes(f.size)})}
+  });
+  if(audio) attachments.push({name:'voice-recording.webm',kind:'audio',size:formatBytes(Math.floor(audio.length*0.75))});
+  const d=ensureDB();
+  const c={id:nextId(),by:SESSION.id,who:SESSION.name,type:fd.get('type'),subject:fd.get('subject'),body:fd.get('body'),attachments,status:'pending',ts:Date.now()};
+  d.complaints.unshift(c);saveDB(d);
+  logActivity('info','Complaint: '+c.subject+' ['+c.type+']');
+  t('Sent to admin');
+  e.target.reset();
+  if(preview) preview.src='';
+  document.getElementById('audioData').value='';
+  navigate('complaints');
+}
+let mediaRecorder,chunks=[],preview;
+function initRecorder(){
+  if(typeof MediaRecorder==='undefined') return;
+  document.getElementById('recStart').onclick=async ()=>{
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      mediaRecorder=new MediaRecorder(stream);chunks=[];preview=document.getElementById('preview');
+      mediaRecorder.ondataavailable=e=>chunks.push(e.data);
+      mediaRecorder.onstop=()=>{
+        const blob=new Blob(chunks,{type:'audio/webm'});
+        const reader=new FileReader();reader.onload=()=>document.getElementById('audioData').value=reader.result;
+        reader.readAsDataURL(blob);preview.src=URL.createObjectURL(blob);
+        document.getElementById('recArea').classList.remove('recording');
+      };
+      mediaRecorder.start();document.getElementById('recArea').classList.add('recording');
+    }catch(e){t('Mic blocked: '+e.message)}
+  };
+  document.getElementById('recStop').onclick=()=>{if(mediaRecorder)mediaRecorder.stop();document.getElementById('recArea').classList.remove('recording')};
+}
+function addUser(e){
+  e.preventDefault();
+  const name=document.getElementById('au-name').value.trim();
+  const email=document.getElementById('au-email').value.trim();
+  const code=document.getElementById('au-code').value.trim();
+  const pass=document.getElementById('au-pass').value;
+  if(pass.length<6){t('Password ≥ 6 chars');return}
+  const d=ensureDB();
+  if(d.users.some(u=>u.email===email)){t('Email exists');return}
+  d.users.push({id:nextId(),name,email,phone:'',code,pass:hash(pass),role:'user',created:Date.now(),blocked:false});
+  saveDB(d);logActivity('ok','Admin added user '+name);t('User added');e.target.reset();navigate('users');
+}
+function toggleUser(id){const d=ensureDB();const u=d.users.find(x=>x.id===id);if(!u)return;u.blocked=!u.blocked;saveDB(d);logActivity('warn','User '+(u.blocked?'blocked':'unblocked')+': '+u.name);t('Updated');navigate('users')}
+function deleteUser(id){if(!confirm('Remove this user permanently?'))return;const d=ensureDB();const u=d.users.find(x=>x.id===id);d.users=d.users.filter(x=>x.id!==id);saveDB(d);logActivity('err','User deleted: '+u.name);t('Deleted');navigate('users')}
+function delUpdate(id){if(!confirm('Delete this update?'))return;const d=ensureDB();d.updates=d.updates.filter(u=>u.id!==id);saveDB(d);t('Deleted');navigate('updates')}
+function delDoc(id){const d=ensureDB();d.docs=d.docs.filter(u=>u.id!==id);saveDB(d);t('Deleted');navigate('documents')}
+function resolveComp(id){const d=ensureDB();const c=d.complaints.find(x=>x.id===id);c.status='resolved';saveDB(d);t('Resolved');navigate('complaints')}
+function openUpload(){const f=document.getElementById('globalFile');f.value='';f.onchange=e=>{const arr=[...e.target.files];if(!arr.length)return;const d=ensureDB();arr.forEach(f=>d.docs.unshift({id:nextId(),name:f.name,size:formatBytes(f.size),type:f.type||'file',by:SESSION.name,ts:Date.now()}));saveDB(d);logActivity('ok',arr.length+' file(s) uploaded');t('Uploaded '+arr.length+' file(s)');navigate('documents')};f.click()}
+function formatBytes(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(1)+' MB'}
+function t(s){const el=document.getElementById('toast');el.textContent=s;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600)}
+function speak(text){try{if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=.95;u.pitch=1.05;speechSynthesis.speak(u)}catch(e){}}
+function buildPetals(){const p=document.getElementById('petals');for(let i=0;i<24;i++){const s=document.createElement('span');s.textContent=(Math.random()>.5?'✦':'✻');s.style.left=(Math.random()*100)+'%';s.style.fontSize=(10+Math.random()*14)+'px';s.style.animationDelay=(Math.random()*8)+'s';s.style.animationDuration=(8+Math.random()*9)+'s';s.style.opacity=(.4+Math.random()*.5).toFixed(2);p.appendChild(s)}}
+function wipeLocal(){if(!confirm('Wipe local database?'))return;localStorage.removeItem(DB);t('Local DB cleared');showAuth()}
+function exportLocal(){const d=ensureDB();const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rizvi_unified_backup_'+Date.now()+'.json';a.click();logActivity('ok','Local DB exported')}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  buildPetals();ensureDB();initRecorder();
+  const s=getSession();
+  if(s){const d=ensureDB();const u=d.users.find(x=>x.id===s.id&&x.role===s.role);if(s.role==='admin'||(u&&!u.blocked)){SESSION=s;enterApp(s.role);return}}
+  showAuth();
+});
+</script>
+</body>
+</html>

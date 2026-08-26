@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>RIZVITEAMS — Integrated Performance Management</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#f5b800" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<style>
+/* ========== ROSE BACKGROUND ANIMATION ========== */
+:root{
+  --rose-yellow:#f5b800;
+  --rose-light:#fff3c4;
+  --rose-dark:#b8860b;
+  --admin-rose:#c41e3a;
+  --bg-soft:#fffaf0;
+  --ink:#222;
+  --line:#e9c46a;
+  --ok:#10b981;
+  --warn:#f59e0b;
+  --err:#dc2626;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI','Noto Sans Bengali',sans-serif}
+html,body{height:100%;width:100%;color:var(--ink);overflow-x:hidden}
+body{
+  background:
+    radial-gradient(1200px 800px at 80% 10%, #ffe7a0 0%, transparent 60%),
+    radial-gradient(1000px 700px at 10% 80%, #ffeec0 0%, transparent 60%),
+    radial-gradient(900px 600px at 60% 60%, #fff3c4 0%, transparent 70%),
+    linear-gradient(180deg,#fff8e1,#fff3c4);
+  min-height:100vh;position:relative;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><defs><radialGradient id='p' cx='50%25' cy='50%25' r='50%25'><stop offset='0%25' stop-color='%23ffd700' stop-opacity='0.9'/><stop offset='60%25' stop-color='%23ffa500' stop-opacity='0.5'/><stop offset='100%25' stop-color='%23ff8c00' stop-opacity='0'/></radialGradient></defs><g><circle cx='300' cy='300' r='260' fill='url(%23p)'/><g fill='%23ffe066' stroke='%23b8860b' stroke-width='1' opacity='0.85'><ellipse cx='300' cy='200' rx='90' ry='50' transform='rotate(0 300 300)'/><ellipse cx='300' cy='200' rx='90' ry='50' transform='rotate(45 300 300)'/><ellipse cx='300' cy='200' rx='90' ry='50' transform='rotate(90 300 300)'/><ellipse cx='300' cy='200' rx='90' ry='50' transform='rotate(135 300 300)'/><circle cx='300' cy='300' r='60' fill='%23d2691e'/></g></g></svg>");
+  background-size:600px 600px;background-repeat:repeat;
+  animation:drift 60s linear infinite;opacity:0.45;
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,200,80,0.18), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(255,150,30,0.18), transparent 40%);
+  animation:pulse 8s ease-in-out infinite alternate;
+}
+@keyframes drift{from{background-position:0 0}to{background-position:600px 600px}}
+@keyframes pulse{from{opacity:0.7}to{opacity:1}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes growrose{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.05) rotate(2deg)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{
+  background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);
+  border-radius:24px;padding:32px;max-width:420px;width:100%;
+  box-shadow:0 20px 60px rgba(199,140,0,0.4),inset 0 0 0 2px rgba(245,184,0,0.5);
+  animation:fadeIn 0.5s ease;
+}
+.login-card .logo{
+  width:110px;height:110px;margin:0 auto 16px;animation:float 4s ease-in-out infinite;
+  filter:drop-shadow(0 8px 14px rgba(199,140,0,0.6));
+}
+.login-card h1{text-align:center;color:#b8860b;font-size:22px;margin-bottom:6px}
+.login-card p{text-align:center;color:#666;font-size:13px;margin-bottom:24px}
+.tab-row{display:flex;gap:6px;margin-bottom:16px;background:#fff8e1;border-radius:14px;padding:4px}
+.tab-row button{flex:1;border:none;background:transparent;padding:10px;border-radius:10px;cursor:pointer;font-weight:600;color:#7a6010;font-size:13px}
+.tab-row button.active{background:linear-gradient(135deg,#f5b800,#ff8c00);color:#fff}
+label{display:block;font-size:12px;color:#666;margin:6px 0 4px;font-weight:600}
+input,select,textarea{
+  width:100%;padding:11px 14px;border:2px solid #f0d77a;border-radius:10px;
+  background:#fffaf0;font-size:14px;outline:none;transition:all .2s
+}
+input:focus,select:focus,textarea:focus{border-color:var(--rose-yellow);box-shadow:0 0 0 3px rgba(245,184,0,0.25)}
+.btn{
+  border:none;padding:11px 18px;border-radius:10px;cursor:pointer;
+  font-weight:600;font-size:14px;transition:all .2s;display:inline-flex;align-items:center;gap:6px
+}
+.btn-primary{background:linear-gradient(135deg,#f5b800,#ff8c00);color:#fff;box-shadow:0 4px 12px rgba(245,184,0,0.4)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(245,184,0,0.6)}
+.btn-secondary{background:#fff;border:2px solid #f0d77a;color:#7a6010}
+.btn-secondary:hover{background:#fff8e1}
+.btn-danger{background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff}
+.btn-ghost{background:transparent;color:#7a6010;text-decoration:underline;font-size:12px;padding:4px 8px}
+.btn-block{width:100%;justify-content:center}
+.divider{height:1px;background:#f0d77a;margin:16px 0}
+.helper{font-size:11px;color:#888;margin-top:6px}
+
+.app{display:none;min-height:100vh}
+.app.active{display:flex}
+.sidebar{
+  width:240px;background:rgba(20,15,5,0.92);color:#fff8e1;
+  padding:18px 12px;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:50;
+  box-shadow:4px 0 20px rgba(0,0,0,0.3);
+}
+.sidebar h2{font-size:15px;margin-bottom:14px;padding:0 6px;color:#ffd700;border-bottom:2px solid #ffd700;padding-bottom:10px}
+.sidebar .grp{font-size:10px;color:#c0a050;text-transform:uppercase;letter-spacing:1px;margin:14px 8px 6px;font-weight:700}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;
+  cursor:pointer;font-size:13px;color:#ffe8a3;transition:all .15s;margin-bottom:2px
+}
+.nav-item:hover{background:rgba(255,216,0,0.15);color:#fff}
+.nav-item.active{background:linear-gradient(135deg,rgba(245,184,0,0.3),rgba(255,140,0,0.2));color:#fff;font-weight:700;border-left:3px solid #ffd700}
+.nav-item .badge{margin-left:auto;background:#dc2626;color:#fff;font-size:10px;padding:2px 7px;border-radius:8px}
+.main{margin-left:240px;padding:0;flex:1;min-height:100vh}
+.topbar{
+  background:rgba(255,255,255,0.85);backdrop-filter:blur(10px);
+  padding:14px 22px;display:flex;align-items:center;gap:14px;
+  border-bottom:2px solid var(--line);position:sticky;top:0;z-index:40;
+}
+.topbar .menu-btn{display:none;background:transparent;border:none;font-size:22px;cursor:pointer}
+.topbar h1{font-size:18px;color:#7a6010;flex:1}
+.topbar .user{font-size:13px;color:#666}
+.content{padding:22px;animation:fadeIn 0.3s ease}
+
+.page{display:none}
+.page.active{display:block}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+.kpi{
+  background:rgba(255,255,255,0.9);backdrop-filter:blur(8px);
+  padding:18px;border-radius:14px;border:2px solid var(--line);
+  box-shadow:0 6px 18px rgba(199,140,0,0.18);
+  position:relative;overflow:hidden;transition:all .2s
+}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(199,140,0,0.35)}
+.kpi:before{content:"";position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,#ffd700,transparent 60%);opacity:0.4}
+.kpi .label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:700}
+.kpi .value{font-size:26px;color:#7a6010;font-weight:800}
+.kpi .sub{font-size:11px;color:#888;margin-top:4px}
+.kpi.green{border-color:#10b981}.kpi.green .value{color:#047857}
+.kpi.red{border-color:#dc2626}.kpi.red .value{color:#991b1b}
+.kpi.blue{border-color:#2563eb}.kpi.blue .value{color:#1d4ed8}
+.kpi.purple{border-color:#9333ea}.kpi.purple .value{color:#6b21a8}
+
+.card{
+  background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);
+  padding:18px;border-radius:14px;border:1px solid rgba(245,184,0,0.4);
+  box-shadow:0 6px 20px rgba(199,140,0,0.15);margin-bottom:18px
+}
+.card h3{font-size:15px;color:#7a6010;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3 .grow{animation:growrose 6s ease-in-out infinite;display:inline-block}
+
+.table-wrap{overflow:auto;max-height:500px;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{position:sticky;top:0;background:linear-gradient(135deg,#fff3c4,#ffe7a0);z-index:2}
+th{padding:10px 12px;text-align:left;color:#7a6010;font-weight:700;border-bottom:2px solid var(--line);white-space:nowrap;font-size:12px}
+td{padding:8px 12px;border-bottom:1px solid #f5e7b8;background:rgba(255,255,255,0.95)}
+tr:hover td{background:#fff8e1}
+.pill{display:inline-block;padding:3px 8px;border-radius:8px;font-size:11px;font-weight:700}
+.pill-ok{background:#d1fae5;color:#065f46}
+.pill-warn{background:#fef3c7;color:#92400e}
+.pill-err{background:#fee2e2;color:#991b1b}
+.pill-info{background:#dbeafe;color:#1e40af}
+.pill-rose{background:#ffe4a3;color:#7a4d00}
+
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{flex:1;min-width:160px}
+.field label{margin-bottom:2px}
+
+.upload-zone{
+  border:2px dashed #f0d77a;border-radius:10px;padding:18px;text-align:center;
+  background:#fffaf0;cursor:pointer;transition:all .2s;margin:8px 0
+}
+.upload-zone:hover{background:#fff8e1;border-color:#ffd700}
+.upload-zone .ico{font-size:32px;margin-bottom:6px}
+.upload-zone .hint{font-size:11px;color:#888;margin-top:4px}
+
+.progress{height:8px;background:#fef3c7;border-radius:6px;overflow:hidden;margin:4px 0}
+.progress .fill{height:100%;background:linear-gradient(90deg,#f5b800,#ff8c00);transition:width .3s}
+
+.alert-rose-bar{
+  position:fixed;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,#f5b800,#ff8c00,#dc2626,#c41e3a,#7c2d12);
+  background-size:400% 100%;animation:shift 6s linear infinite;z-index:1000
+}
+@keyframes shift{from{background-position:0 0}to{background-position:400% 0}}
+
+.float-roses{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.float-roses .r{
+  position:absolute;animation:drift-float linear infinite;
+  background:radial-gradient(circle, rgba(255,215,0,0.6), rgba(255,165,0,0.3) 60%, transparent 70%);
+  border-radius:50%
+}
+@keyframes drift-float{
+  0%{transform:translateY(110vh) rotate(0deg);opacity:0}
+  10%{opacity:0.6}
+  90%{opacity:0.6}
+  100%{transform:translateY(-30vh) rotate(360deg);opacity:0}
+}
+.mega-rose{position:fixed;top:50%;left:50%;width:900px;height:900px;margin:-450px 0 0 -450px;
+  pointer-events:none;z-index:0;opacity:0.16;
+  animation:mega-spin 90s linear infinite, mega-pulse 7s ease-in-out infinite alternate;
+  filter:drop-shadow(0 0 60px rgba(255,200,0,0.5));
+}
+@keyframes mega-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes mega-pulse{from{opacity:0.10;transform:scale(1)}to{opacity:0.22;transform:scale(1.06)}}
+.status-ticker{overflow:hidden;position:relative}
+.status-ticker .row{animation:rowIn .5s ease}
+@keyframes rowIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+.sync-pill{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;
+  background:#fff8e1;border-radius:14px;font-size:11px;color:#7a6010;
+  border:1px solid #f0d77a
+}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#10b981;animation:spin 2s linear infinite}
+
+.bangla{font-family:'Noto Sans Bengali','Kalpurush',sans-serif}
+
+@media (max-width:768px){
+  .sidebar{transform:translateX(-100%);transition:transform .3s}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .topbar .menu-btn{display:block}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .kpi .value{font-size:18px}
+  .content{padding:14px}
+}
+
+/* settings dialog */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;
+  display:none;align-items:center;justify-content:center;padding:20px
+}
+.modal-overlay.active{display:flex;animation:fadeIn .2s ease}
+.modal{
+  background:#fff;border-radius:16px;max-width:560px;width:100%;
+  padding:24px;max-height:80vh;overflow:auto
+}
+.modal h3{color:#7a6010;margin-bottom:14px}
+.close-x{float:right;background:transparent;border:none;font-size:24px;cursor:pointer;color:#888}
+.toast{
+  position:fixed;bottom:20px;right:20px;background:rgba(255,255,255,0.95);
+  padding:14px 18px;border-radius:10px;border-left:4px solid #f5b800;
+  box-shadow:0 6px 20px rgba(0,0,0,0.15);z-index:300;animation:fadeIn .3s;
+  max-width:300px;font-size:13px
+}
+.toast.ok{border-color:#10b981}
+.toast.err{border-color:#dc2626}
+
+/* signature/logo */
+.brand{font-size:13px;font-weight:800;color:#7a6010;display:flex;align-items:center;gap:8px}
+.brand .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#f5b800,#dc2626);display:inline-block;animation:spin 3s linear infinite}
+
+.eval-bar{
+  height:22px;border-radius:6px;background:#f5e7b8;overflow:hidden;position:relative;margin:6px 0
+}
+.eval-bar .fill{height:100%;display:flex;align-items:center;padding:0 8px;color:#fff;font-size:11px;font-weight:700;border-radius:6px}
+.eval-bar .fill.green{background:linear-gradient(90deg,#10b981,#059669)}
+.eval-bar .fill.yellow{background:linear-gradient(90deg,#f5b800,#d97706)}
+.eval-bar .fill.red{background:linear-gradient(90deg,#dc2626,#b91c1c)}
+
+.flowers{display:flex;justify-content:center;gap:4px;margin:6px 0}
+.flowers .f{width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,#ffd700,#ff8c00);border:1px solid #b8860b}
+
+.checks-list{display:flex;flex-direction:column;gap:6px}
+.check-item{
+  display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);
+  border-radius:8px;background:#fffaf0
+}
+.check-item .opts{display:flex;gap:4px;flex:1}
+.check-item .opts button{padding:6px 12px;border:1px solid #f0d77a;background:#fff;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600}
+.check-item .opts button.active.yes{background:#d1fae5;color:#065f46;border-color:#10b981}
+.check-item .opts button.active.no{background:#fee2e2;color:#991b1b;border-color:#dc2626}
+.check-item .opts button.active.partial{background:#fef3c7;color:#92400e;border-color:#f59e0b}
+.check-item input.note{flex:1;padding:6px 10px;font-size:12px;border-radius:6px;border:1px solid #f0d77a}
+
+.signature-pad{border:1px dashed var(--line);border-radius:8px;height:80px;background:#fffaf0;display:flex;align-items:center;justify-content:center;color:#888}
+</style>
+</head>
+<body>
+<div class="alert-rose-bar"></div>
+<div class="float-roses" id="floatRoses"></div>
+<svg class="mega-rose" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+  <g fill="#ffd700" stroke="#b8860b" stroke-width="2">
+    <ellipse cx="300" cy="200" rx="140" ry="80" transform="rotate(0 300 300)"/>
+    <ellipse cx="300" cy="200" rx="140" ry="80" transform="rotate(30 300 300)"/>
+    <ellipse cx="300" cy="200" rx="140" ry="80" transform="rotate(60 300 300)"/>
+    <ellipse cx="300" cy="200" rx="140" ry="80" transform="rotate(90 300 300)"/>
+    <ellipse cx="300" cy="200" rx="140" ry="80" transform="rotate(120 300 300)"/>
+    <ellipse cx="300" cy="200" rx="140" ry="80" transform="rotate(150 300 300)"/>
+    <ellipse cx="300" cy="200" rx="140" ry="80" transform="rotate(180 300 300)"/>
+    <ellipse cx="300" cy="200" rx="140" ry="80" transform="rotate(210 300 300)"/>
+    <ellipse cx="300" cy="200" rx="140" ry="80" transform="rotate(240 300 300)"/>
+    <ellipse cx="300" cy="200" rx="140" ry="80" transform="rotate(270 300 300)"/>
+    <ellipse cx="300" cy="200" rx="140" ry="80" transform="rotate(300 300 300)"/>
+    <ellipse cx="300" cy="200" rx="140" ry="80" transform="rotate(330 300 300)"/>
+    <circle cx="300" cy="300" r="90" fill="#ff8c00"/>
+  </g>
+</svg>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card">
+    <svg class="logo" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="lg" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffd700"/>
+          <stop offset="60%" stop-color="#ffa500"/>
+          <stop offset="100%" stop-color="#ff4500"/>
+        </radialGradient>
+      </defs>
+      <circle cx="60" cy="60" r="55" fill="url(#lg)" opacity="0.5"/>
+      <g transform="translate(60 60)">
+        <ellipse cx="0" cy="-22" rx="22" ry="12" fill="#ffd700" stroke="#b8860b"/>
+        <ellipse cx="0" cy="-22" rx="22" ry="12" transform="rotate(36)" fill="#ffe066" stroke="#b8860b"/>
+        <ellipse cx="0" cy="-22" rx="22" ry="12" transform="rotate(72)" fill="#ffd700" stroke="#b8860b"/>
+        <ellipse cx="0" cy="-22" rx="22" ry="12" transform="rotate(108)" fill="#ffe066" stroke="#b8860b"/>
+        <ellipse cx="0" cy="-22" rx="22" ry="12" transform="rotate(144)" fill="#ffd700" stroke="#b8860b"/>
+        <circle r="10" fill="#8b4513"/>
+      </g>
+      <text x="60" y="115" text-anchor="middle" font-size="10" fill="#b8860b" font-weight="bold">RIZVI</text>
+    </svg>
+    <h1>RIZVITEAMS</h1>
+    <p>Integrated Performance Management & Evaluation Framework</p>
+
+    <div class="tab-row">
+      <button class="active" onclick="switchLoginTab('admin')" id="tabAdmin">👤 Admin Login</button>
+      <button onclick="switchLoginTab('user')" id="tabUser">👥 Employee Login</button>
+    </div>
+
+    <!-- ADMIN LOGIN -->
+    <div id="adminLogin">
+      <label>Email / Username</label>
+      <input id="admUser" placeholder="ssheraji@gmail.com" />
+      <label>Password</label>
+      <input id="admPass" type="password" placeholder="Admin Password" />
+      <div class="helper">🔐 শুধুমাত্র Admin role — Full access to ALL departments, sections, employees & settings</div>
+      <div class="divider"></div>
+      <button class="btn btn-primary btn-block" onclick="loginAdmin()">🔓 লগইন করুন (Admin)</button>
+    </div>
+
+    <!-- USER LOGIN -->
+    <div id="userLogin" style="display:none">
+      <label>Office ID Card No <strong>OR</strong> Mobile Number</label>
+      <input id="usrId" placeholder="e.g. AF1 0001 / 01912708566" />
+      <label>Password</label>
+      <input id="usrPass" type="password" placeholder="Default: 12345678" />
+      <div class="row" style="margin-top:10px;justify-content:space-between">
+        <button class="btn btn-ghost" onclick="showForgot()">Forgot password?</button>
+        <button class="btn btn-ghost" onclick="showSignup()">Sign up</button>
+      </div>
+      <div class="divider"></div>
+      <button class="btn btn-primary btn-block" onclick="loginUser()">🔓 লগইন করুন (Employee)</button>
+      <div class="helper" style="margin-top:8px;text-align:center">🆕 First-time users: click <b>Sign up</b> with email or mobile number</div>
+    </div>
+
+    <div class="divider"></div>
+    <div style="font-size:11px;color:#999;text-align:center">
+      🔒 Admin এবং User login সম্পূর্ণ আলাদা — কোনো overlap নেই<br>
+      <span class="bangla">সকল ইমপ্লয় শুধুমাত্র তাদের নিজ নিজ ড্যাশবোর্ড দেখতে পারবেন</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FORGOT PASSWORD ============ -->
+<div id="forgotModal" class="modal-overlay">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('forgotModal')">×</button>
+    <h3>🔑 Forgot Password</h3>
+    <label>Email or Mobile</label>
+    <input id="fgEmail" placeholder="your@email.com or 01XXXXXXXXX"/>
+    <button class="btn btn-primary btn-block" style="margin-top:14px" onclick="sendReset()">Send Reset Link</button>
+  </div>
+</div>
+<!-- ============ SIGN UP ============ -->
+<div id="signupModal" class="modal-overlay">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('signupModal')">×</button>
+    <h3>📝 Sign Up (Employee)</h3>
+    <label>Email or Mobile Number</label>
+    <input id="suId" placeholder="01XXXXXXXXX or your@email.com"/>
+    <label>Create Password</label>
+    <input id="suPass" type="password" placeholder="Min 8 characters"/>
+    <label>Confirm Password</label>
+    <input id="suPass2" type="password"/>
+    <label>Full Name</label>
+    <input id="suName" placeholder="আপনার নাম"/>
+    <button class="btn btn-primary btn-block" style="margin-top:14px" onclick="signupUser()">Create Account</button>
+    <div class="helper">After admin verifies your Office ID, you'll get full dashboard access.</div>
+  </div>
+</div>
+<!-- ============ SETTINGS MODAL ============ -->
+<div id="settingsModal" class="modal-overlay">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('settingsModal')">×</button>
+    <h3>⚙️ Admin Settings</h3>
+    <div class="row">
+      <div class="field"><label>Company Name</label><input id="optCompany" value="RIZVI FASHIONS LTD."/></div>
+      <div class="field"><label>Total Employees</label><input id="optTotal" type="number" value="6423"/></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label>Payroll start day</label><input type="number" id="optStart" value="26" min="1" max="31"/></div>
+      <div class="field"><label>Payroll end day</label><input type="number" id="optEnd" value="25" min="1" max="31"/></div>
+    </div>
+    <div class="field" style="margin-top:10px">
+      <label>Punch Machine Endpoint (TCP — port 7700)</label>
+      <input id="optPunch" placeholder="ws://192.168.1.100:7700"/>
+    </div>
+    <div class="field">
+      <label>Sync Interval (seconds)</label>
+      <input type="number" id="optSync" value="10" min="2"/>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label>Theme Color</label><input id="optTheme" value="#f5b800"/></div>
+      <div class="field"><label>Currency Symbol</label><input id="optCurrency" value="৳"/></div>
+    </div>
+    <div class="divider"></div>
+    <div class="row" style="gap:6px">
+      <button class="btn btn-primary btn-block" onclick="saveSettings()">💾 Save Settings</button>
+      <button class="btn btn-danger btn-block" onclick="resetAll()">⚠️ Reset to Factory</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div id="appScreen" class="app">
+  <aside class="sidebar" id="sidebar">
+    <h2>🌹 RIZVITEAMS</h2>
+    <div class="grp">Overview</div>
+    <div class="nav-item active" data-page="dashboard" onclick="nav('dashboard')">🏠 Dashboard</div>
+    <div class="nav-item" data-page="world" onclick="nav('world')">🌍 World Dashboard</div>
+
+    <div class="grp">Human Resources</div>
+    <div class="nav-item" data-page="employees" onclick="nav('employees')">👥 Employees <span class="badge" id="bdgEmp">6423</span></div>
+    <div class="nav-item" data-page="attendance" onclick="nav('attendance')">⏰ Attendance / Punch</div>
+    <div class="nav-item" data-page="payroll" onclick="nav('payroll')">💰 Payroll <span class="badge" id="bdgPay">চলমান</span></div>
+    <div class="nav-item" data-page="performance" onclick="nav('performance')">📊 Performance / KPI</div>
+    <div class="nav-item" data-page="evaluation" onclick="nav('evaluation')">🎯 Evaluation System</div>
+    <div class="nav-item" data-page="complaints" onclick="nav('complaints')">🔔 Complaints / Suggestions</div>
+    <div class="nav-item" data-page="training" onclick="nav('training')">📚 Training</div>
+    <div class="nav-item" data-page="workupdates" onclick="nav('workupdates')">📝 Work Updates</div>
+
+    <div class="grp">Operations</div>
+    <div class="nav-item" data-page="production" onclick="nav('production')">🏭 Production Plan</div>
+    <div class="nav-item" data-page="quality" onclick="nav('quality')">✅ Quality Control</div>
+    <div class="nav-item" data-page="merchandising" onclick="nav('merchandising')">🛍 Merchandising</div>
+    <div class="nav-item" data-page="maintenance" onclick="nav('maintenance')">🔧 Maintenance</div>
+
+    <div class="grp">Inventory & Procurement</div>
+    <div class="nav-item" data-page="inventory" onclick="nav('inventory')">📦 Inventory</div>
+    <div class="nav-item" data-page="fabric" onclick="nav('fabric')">🧵 Fabric Purchase / Booking</div>
+    <div class="nav-item" data-page="procurement" onclick="nav('procurement')">🛒 Procurement</div>
+
+    <div class="grp">Compliance</div>
+    <div class="nav-item" data-page="compliance" onclick="nav('compliance')">📜 Compliance & Audit</div>
+    <div class="nav-item" data-page="trimstore" onclick="nav('trimstore')">🏪 Trims / Store</div>
+    <div class="nav-item" data-page="traceability" onclick="nav('traceability')">🔍 Traceability</div>
+    <div class="nav-item" data-page="field" onclick="nav('field')">📍 Field Duty / Live Location</div>
+
+    <div class="grp">39 Sections</div>
+    <div class="nav-item" data-page="sections" onclick="nav('sections')">📂 All Sections</div>
+
+    <div class="grp">Settings</div>
+    <div class="nav-item" onclick="openSettings()">⚙️ Settings</div>
+    <div class="nav-item" onclick="doLogout()">🚪 Logout</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-btn" onclick="toggleSide()">☰</button>
+      <div class="brand"><span class="dot"></span> RIZVI MANAGEMENT</div>
+      <h1 id="pageTitle">Dashboard</h1>
+      <span class="sync-pill"><span class="sync-dot"></span>Punch Sync 10s</span>
+      <span class="user" id="whoUser">Admin</span>
+    </div>
+
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div id="toastBox"></div>
+
+<!-- Firebase SDK compat (v10, Spark free tier) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-app.js"></script>
+<script src="real-employees.js"></script>
+<script src="rizvi-data.js"></script>
+<script src="rizvi-app.js"></script>
+</body>
+</html>

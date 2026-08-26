@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    // Replace with your real admin/management UID or custom claims before production.
+    function admin() {
+      return signedIn() && request.auth.token.email == 'ssheraji@gmail.com';
+    }
+
+    match /rizvi_sync/{docId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn();
+      allow delete: if admin();
+    }
+
+    match /rizvi_tasks/{docId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn();
+      allow delete: if admin();
+    }
+
+    match /auditLogs/{docId} {
+      allow read: if admin();
+      allow create: if signedIn();
+      allow update, delete: if admin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
