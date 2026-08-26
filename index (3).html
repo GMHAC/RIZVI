@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>RIZVI-MANAGEMENT — Integrated Management &amp; Business Intelligence System</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage-compat.js"></script>
 <style>
 :root{
   --bg:#07070a; --panel:#121016; --panel2:#1a1620; --line:#2a2432;
@@ -589,7 +593,7 @@ button.ghost:hover{color:var(--ink);}
         <div class="ok" id="fp_ok"></div>
       </div>
     </div>
-    <div class="gateFoot">© 2026 RIZVI FASHIONS LTD. — RIZVI-MANAGEMENT v1.0.0</div>
+    <div class="gateFoot" id="gateFoot">© 2026 RIZVI FASHIONS LTD. — RIZVI-MANAGEMENT v1.0.0</div>
   </div>
 </div>
 
@@ -603,6 +607,7 @@ button.ghost:hover{color:var(--ink);}
     <div class="navSectionLbl">Overview</div>
     <a class="navA active" data-page="dashboard" onclick="go('dashboard')">📊 Dashboard</a>
     <a class="navA" data-page="bubble" onclick="go('bubble')">🫧 Live Bubble Dashboard</a>
+    <a class="navA" data-page="isochecklist" onclick="go('isochecklist')">📋 ISO Checklist (সব মডিউল)</a>
     <div class="navSectionLbl">Operational Management</div>
     <div id="aNavModules"></div>
     <div class="navSectionLbl">Sections</div>
@@ -616,7 +621,7 @@ button.ghost:hover{color:var(--ink);}
     <div class="topbar">
       <div class="left">
         <button class="hamburger" onclick="toggleSidebar()">☰</button>
-        <div class="status"><span class="dotlive"></span> RIZVI Management System — Live</div>
+        <div class="status"><span class="dotlive"></span> <span id="syncStatusTxt">RIZVI Management System — Live</span></div>
       </div>
       <div class="right">
         <div class="iconBtn" onclick="toast('সার্চ শীঘ্রই যুক্ত হবে')">🔍</div>
@@ -684,10 +689,37 @@ button.ghost:hover{color:var(--ink);}
 </div>
 
 <script>
+/* ============ FIREBASE (FREE "Spark" PLAN) — OPTIONAL LIVE SYNC ============
+   ধাপ ১: https://console.firebase.google.com -এ গিয়ে একটি ফ্রি প্রজেক্ট বানান (Spark Plan — কার্ড লাগে না)
+   ধাপ ২: Project settings → General → "Add app" → Web (</>) থেকে নিচের মতো একটি config অবজেক্ট পাবেন
+   ধাপ ৩: নিচের firebaseConfig-এ আপনার নিজের মান বসান, ফাইল সেভ করুন — সাথে সাথেই সব ডিভাইসে লাইভ সিঙ্ক চালু হয়ে যাবে
+   ধাপ ৪: Firebase Console-এ Authentication → Email/Password চালু করুন, এবং Firestore Database + Storage তৈরি করুন
+   কনফিগার না করলে অ্যাপ স্বয়ংক্রিয়ভাবে "Local Demo Mode"-এ চলবে (শুধু এই ব্রাউজারে ডেটা থাকবে)। */
+const firebaseConfig = {
+  apiKey: "AIzaSyC8bzwNMgE8xRNC0WeBVNQtWFL1W3ylft0",
+  authDomain: "rfims-s.firebaseapp.com",
+  projectId: "rfims-s",
+  storageBucket: "rfims-s.firebasestorage.app",
+  messagingSenderId: "25755511409",
+  appId: "1:25755511409:web:864e272a8f57b22e2ec9d0"
+};
+let fbAuth=null, fbDb=null, fbStorage=null, useFirebase=false;
+try{
+  if(typeof firebase!=='undefined' && firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('PASTE_')!==0){
+    firebase.initializeApp(firebaseConfig);
+    fbAuth = firebase.auth(); fbDb = firebase.firestore(); fbStorage = firebase.storage();
+    fbDb.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+    useFirebase = true;
+  }
+}catch(e){ console.warn('Firebase init failed, falling back to Local Demo Mode', e); useFirebase=false; }
+
+function syncStatusText(){ return useFirebase ? '🟢 Firebase Live Sync সক্রিয়' : '🟡 Local Demo Mode (Firebase কনফিগার করা হয়নি)'; }
+
 /* ============ DATA ============ */
 const MODULES = [{"icon": "🏢", "name": "Corporate & Strategic Management"}, {"icon": "📢", "name": "Management Communication & Live Conference"}, {"icon": "🤝", "name": "Buyer & Trading House Management"}, {"icon": "👥", "name": "HRM – Full Human Resource Management"}, {"icon": "⏱️", "name": "Attendance & Payroll Management"}, {"icon": "🎓", "name": "Training & Competency Management"}, {"icon": "❤️", "name": "Welfare Management"}, {"icon": "🏥", "name": "Medical Management"}, {"icon": "📣", "name": "Grievance Management"}, {"icon": "⚖️", "name": "Compliance Management"}, {"icon": "📋", "name": "Integrated ISO Management System"}, {"icon": "🔎", "name": "Internal Audit Management"}, {"icon": "🧾", "name": "External / Buyer Audit Management"}, {"icon": "⚠️", "name": "Risk Management"}, {"icon": "🔄", "name": "CAPA & Continual Improvement"}, {"icon": "🛡️", "name": "HSE / Occupational Health & Safety"}, {"icon": "🌱", "name": "Environmental Management"}, {"icon": "♻️", "name": "Waste Management"}, {"icon": "🧪", "name": "Chemical Management"}, {"icon": "🔐", "name": "IT & Information Security Management"}, {"icon": "📁", "name": "Document & Record Management"}, {"icon": "📊", "name": "KPI & Performance Management"}, {"icon": "📅", "name": "Planning Management"}, {"icon": "📐", "name": "IE Management"}, {"icon": "🏭", "name": "Production Management"}, {"icon": "🔍", "name": "Quality Assurance / QC Management"}, {"icon": "🧵", "name": "Fabric Management"}, {"icon": "🧷", "name": "Accessories Management"}, {"icon": "🛒", "name": "Procurement Management"}, {"icon": "📦", "name": "Inventory & Store Management"}, {"icon": "🏷️", "name": "Marking & Traceability Management"}, {"icon": "💰", "name": "Accounts & Finance Management"}, {"icon": "🚢", "name": "Commercial Management"}, {"icon": "🔧", "name": "Maintenance Management"}, {"icon": "⚡", "name": "Utility & Energy Management"}, {"icon": "♻️", "name": "Jhute / Leftover / Stock Lot Management"}, {"icon": "🚨", "name": "Emergency & Crisis Management"}, {"icon": "🔄", "name": "Business Continuity Management"}, {"icon": "📝", "name": "Task & Workflow Management"}, {"icon": "📈", "name": "Reports & Analytics"}, {"icon": "🔔", "name": "Notification & Alert Center"}, {"icon": "🔐", "name": "User / Role / Permission Management"}, {"icon": "🗃️", "name": "Master Data Management"}, {"icon": "⚙️", "name": "System Administration"}];
 const SECTIONS = ["Accounts & Finance", "Admin ,HR & Compliance", "Audit", "CAD", "Commercial", "Cutting", "Cutting Quality", "Electrical", "Fabric", "Finishing", "Finishing Quality", "IE", "Marketing & Merchandising", "Mechanical", "Planning", "Procurement", "Production", "QA Audit", "Quality", "Quality Receive", "Receive", "Sample", "Security", "Sewing", "Sewing Quality", "Size Set", "Stock Lot", "Store Quality", "Store", "Others"];
 const DESIGNATIONS = ["A.G.M", "A.S.M.O", "Assort Man", "Asst. Boilar Operator", "Asst. Bundle Man", "Asst. Cutter", "Asst. Electrician", "Asst. Heat Seal Man", "Asst. Incharge", "Asst. Issue Man", "Asst. Lay Man", "Asst. Manager", "Asst. Mechanic", "Asst. Merchandiser", "Asst. Officer", "Asst. Print Delivery Man", "Asst. Printer", "Asst. Production Manager", "Asst. Quality  Incharge", "Asst. Receive Man", "Asst. Relax Man", "Asst. Scissor Man", "Asst. Supervisor", "Asst.Executive", "Asst.Manager", "Asst.Mechanic Incharge", "Asst.Reporter", "Asst.Technical Incharge", "Auditor", "Boilar Supervisor", "Boiler Operator", "Bundle Man", "Button Supervisor", "Canteen Boy", "Child Care", "Civil Engineer", "Cleaner", "Cleaner Supervisor", "Cook", "Cutter Man", "Cutting Asst.", "Cutting Incharge", "Cutting Supervisor", "Cutting Technician", "Deputy General Manager", "Deputy Manager", "Driver", "Driver.", "E.C.O", "Electric Incharge", "Electric Supervisor", "Electric Technician", "Executive", "Fabric Incharge", "Fashion Designer", "Finishing Asst.", "Finishing Incharge", "Fire Man", "Fire Safety Officer", "Folder", "Folding Supervisor", "G.P.Q", "General Electrician", "General Manager", "Generator Supervisor", "Heat Seal Man", "Heat Seal Supervisor", "Input Man", "Input Supervisor (Cutting)", "Iron .Supervisor", "Iron Man", "Issue Man", "Jr Bundle Man", "Jr Cutter Man", "Jr Heat Seal Man", "Jr Lay Man", "Jr Poly man", "Jr Scissor Man", "Jr Spot Man", "Jr Sticker Man", "Jr Tag Man", "Jr Writer Man", "Jr. Bundle Man", "Jr. Folder", "Jr. Input Man", "Jr. Iron Man", "Jr. Issue Man", "Jr. Merchandiser", "Jr. Metal Detector Operator", "Jr. Numbering Man", "Jr. Officer", "Jr. Packer", "Jr. Piping M.O", "Jr. Q.I", "Jr. Receive Man", "Jr. S.M.O (B/T)", "Jr. S.M.O (F/D)", "Jr. S.M.O (F/L)", "Jr. S.M.O (O/L)", "Jr. S.M.O (P/M)", "Jr. S.M.O (Z/Z)", "Jr. Scissor Man", "Jr. Security Guard", "Jr. Spotman", "Jr.Computer Operator", "Jr.E.C.O", "Jr.Executive", "Jr.Lady Guard", "Jr.Needle Man", "Jr.Piping M.O", "Jr.Plamber", "Jr.Poly Man", "Jr.Print Delivery Man", "Jr.Relax Man", "Jr.T.S.M.O", "Jr.Tag Man", "Lift Operator", "Line Ironman", "Loader", "Loader Supervisor", "MTO", "Machine Technician", "Manager", "Mechanic Incharge", "Medical Assistant", "Medical Asst.", "Medical Officer", "Merchandiser", "Messenger", "Nurse", "Officer", "Packer", "Packing Supervisor", "Peon", "Piping M. O", "Poly Man", "Poly Woman", "Print Delivery Man", "Product Safety Officer", "Production Manager", "Production Reporter", "Q.I", "Quality Incharge", "Quality Supervisor", "Receive Incharge", "Receive Man", "Receive Supervisor", "S.M.O (F/D)", "S.M.O B/T", "S.M.O F/L", "S.M.O O/L", "S.M.O P/M", "S.M.O Z/Z", "S.S.M.O (B/T)", "S.S.M.O (F/D)", "S.S.M.O (F/L)", "S.S.M.O (O/L)", "S.S.M.O (P/M)", "Sample Man.", "Sample Supervisor", "Security Guard", "Security Supervisor", "Sewing Incharge", "Sewing Supervisor", "Sewing Technician", "Size Set Incharge", "Spotman", "Sr. Cutter Man", "Sr. Executive", "Sr. Manager", "Sr. Merchandiser", "Sr. Officer", "Sr. Production Manager", "Sr. Q.I", "Sr. Sample Man", "Sr. Spotman", "Sr.Finishing Supervisor", "Sr.G.P.Q", "Sr.Iron Supervisor", "Sr.Quality Supervisor", "Sr.Receive  Supervisor", "Sr.Receive Man", "Sr.Sample Man", "Sr.Sewing Supervisor", "Store Asst", "Store Keeper", "Store Supervisor", "Sweeper", "T.S.M.O", "Tag Man", "Technical Incharge", "Technician (AC)", "Telephone Operator", "Trainee Merchandiser", "Welder.", "Welfare Officer"];
+const ISO_BASE = [{"clause": "4.4", "item": "প্রক্রিয়া (Process) সংজ্ঞায়িত ও ডকুমেন্টেড আছে"}, {"clause": "5.1", "item": "ম্যানেজমেন্ট লিডারশিপ ও কমিটমেন্ট নিশ্চিত করা হয়েছে"}, {"clause": "6.1", "item": "ঝুঁকি ও সুযোগ (Risk & Opportunity) চিহ্নিত করা হয়েছে"}, {"clause": "7.1.5", "item": "পরিমাপ/মনিটরিং যন্ত্রপাতি ক্যালিব্রেটেড ও সচল"}, {"clause": "7.2", "item": "সংশ্লিষ্ট কর্মীদের প্রশিক্ষণ/কম্পিটেন্সি রেকর্ড হালনাগাদ"}, {"clause": "7.5", "item": "প্রয়োজনীয় ডকুমেন্ট ও রেকর্ড সংরক্ষিত ও সহজলভ্য"}, {"clause": "8.1", "item": "অপারেশনাল প্ল্যানিং ও নিয়ন্ত্রণ যথাযথভাবে অনুসরণ করা হচ্ছে"}, {"clause": "8.5", "item": "প্রোডাকশন/সার্ভিস প্রোভিশন নিয়ন্ত্রিত অবস্থায় পরিচালিত হচ্ছে"}, {"clause": "8.7", "item": "অসামঞ্জস্যপূর্ণ (Non-conforming) আউটপুট চিহ্নিত ও পৃথকীকৃত"}, {"clause": "9.1", "item": "পারফরম্যান্স মনিটরিং, পরিমাপ ও বিশ্লেষণ চলমান আছে"}, {"clause": "9.2", "item": "অভ্যন্তরীণ অডিট (Internal Audit) সময়মতো সম্পন্ন হয়েছে"}, {"clause": "10.2", "item": "অসামঞ্জস্য পাওয়া গেলে CAPA (Corrective Action) গ্রহণ করা হয়েছে"}];
 const ADMIN_CRED = {email:'ssheraji@gmail.com', password:'Admin123456'};
 const TEAM_NAMES = ['সেলস টিম','অপারেশনস টিম','ফাইন্যান্স টিম'];
 const DEMO_TASKS = [
@@ -698,78 +730,54 @@ const DEMO_TASKS = [
   {t:'বিল যাচাই', team:'ফাইন্যান্স টিম', who:'ফারহান সাকিব', init:'FS', due:'আজ ২:০০ PM'}
 ];
 
-/* ============ STORAGE HELPERS ============
-   localStorage থাকে instant local cache হিসেবে (offline হলেও অ্যাপ কাজ করে),
-   আর একই সাথে প্রতিটা লেখা/পড়া ব্যাকগ্রাউন্ডে RIZVIWORLD Django সার্ভারের
-   /api/rizviworld/sync/ endpoint-এর সাথে sync হয় — তাই একই সার্ভারে connected
-   যেকোনো ডিভাইস (ল্যাপটপ, ফোন, ট্যাব, Smart TV) কয়েক সেকেন্ডের মধ্যেই একই ডেটা দেখে।
-   সার্ভার না পাওয়া গেলে (offline/no backend) অ্যাপ চুপচাপ localStorage-only মোডে
-   fallback করে — কিছু ভাঙে না। */
-const RZ_SYNC = {
-  base: (window.RIZVI_API_BASE || '/api/rizviworld'),
-  enabled: true,
-  pollMs: (window.RIZVI_POLL_MS || 3000),
-  since: null,
-  pending: new Set(),
-  onChange: null, // app sets this to a re-render callback
-};
-
+/* ============ STORAGE HELPERS ============ */
 function db(key, fallback){
   try{ const v = localStorage.getItem('rz_'+key); return v? JSON.parse(v): fallback; }catch(e){ return fallback; }
 }
-function setDb(key, val){
-  localStorage.setItem('rz_'+key, JSON.stringify(val));
-  rzSyncPush(key, val);
-}
+function setDb(key, val){ localStorage.setItem('rz_'+key, JSON.stringify(val)); }
 
-/* --- push one key to the server (fire-and-forget, retried on next poll if it fails) --- */
-function rzSyncPush(key, val){
-  if(!RZ_SYNC.enabled) return;
-  fetch(`${RZ_SYNC.base}/sync/${encodeURIComponent(key)}/`, {
-    method: 'PUT',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({value: val})
-  }).catch(()=>{ RZ_SYNC.pending.add(key); });
+/* ---- Firestore mirror helpers (only active when useFirebase===true) ---- */
+function fsSet(coll, id, data){
+  if(!useFirebase) return;
+  fbDb.collection(coll).doc(String(id)).set(data, {merge:true}).catch(e=>console.warn('Firestore write failed ('+coll+')', e));
 }
-
-/* --- pull everything once on load, so a fresh device starts with live server data --- */
-async function rzSyncPullAll(){
-  if(!RZ_SYNC.enabled) return;
-  try{
-    const res = await fetch(`${RZ_SYNC.base}/sync/`);
-    if(!res.ok) throw new Error('no backend');
-    const data = await res.json();
-    (data.items||[]).forEach(item=>{
-      if(item.value !== null && item.value !== undefined){
-        localStorage.setItem('rz_'+item.key, JSON.stringify(item.value));
-      }
-    });
-    RZ_SYNC.since = data.server_time;
-  }catch(e){
-    // কোনো ব্যাকএন্ড নেই — localStorage-only demo মোডে চলবে
-    RZ_SYNC.enabled = false;
-  }
+function fsDelete(coll, id){
+  if(!useFirebase) return;
+  fbDb.collection(coll).doc(String(id)).delete().catch(e=>console.warn('Firestore delete failed ('+coll+')', e));
 }
-
-/* --- short-poll loop: every RZ_SYNC.pollMs, ask "কী কী বদলেছে?" এবং হলে re-render --- */
-async function rzSyncPoll(){
-  if(!RZ_SYNC.enabled) return;
-  try{
-    const url = `${RZ_SYNC.base}/sync/${RZ_SYNC.since ? '?since='+encodeURIComponent(RZ_SYNC.since) : ''}`;
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('poll failed');
-    const data = await res.json();
-    let changed = false;
-    (data.items||[]).forEach(item=>{
-      const cur = localStorage.getItem('rz_'+item.key);
-      const next = JSON.stringify(item.value);
-      if(cur !== next){ localStorage.setItem('rz_'+item.key, next); changed = true; }
-    });
-    RZ_SYNC.since = data.server_time;
-    if(changed && typeof RZ_SYNC.onChange === 'function') RZ_SYNC.onChange();
-  }catch(e){ /* সার্ভার সাময়িক আনরিচেবল হলেও অ্যাপ চলতে থাকে, পরের poll-এ আবার চেষ্টা */ }
+const _fsUnsubs = [];
+function fsListen(coll, localKey, onAfter){
+  if(!useFirebase) return;
+  const unsub = fbDb.collection(coll).onSnapshot(snap=>{
+    const arr = [];
+    snap.forEach(doc=> arr.push(doc.data()));
+    arr.sort((a,b)=> (b.t||b.joined||0)-(a.t||a.joined||0));
+    localStorage.setItem('rz_'+localKey, JSON.stringify(arr));
+    if(onAfter) onAfter(arr);
+  }, err=>console.warn('Firestore listen failed ('+coll+')', err));
+  _fsUnsubs.push(unsub);
 }
-setInterval(rzSyncPoll, RZ_SYNC.pollMs);
+function startFirestoreSync(){
+  if(!useFirebase) return;
+  fsListen('activity', 'activity', ()=>{
+    refreshNotifBadge();
+    const cur = document.querySelector('#aMain [data-current]');
+    if(cur && cur.dataset.current==='dashboard') renderDashboard(currentDashMode);
+    pushUserFeed();
+  });
+  fsListen('users', 'users', ()=>{ if(document.getElementById('aMainContent') && document.getElementById('aMainContent').innerHTML.includes('Admin Control')) renderAdminControl(); });
+  fsListen('employees', 'employees', ()=>{});
+  fsListen('trash', 'trash', ()=>{});
+  fsListen('isoChecklist', 'isoChecklist_arr', (arr)=>{
+    const map = {}; arr.forEach(r=>{ if(r.key){ const {key, updatedAt, updatedBy, ...rest} = r; map[key]=rest; } });
+    setDb('isoChecklist', map);
+    const cur = document.querySelector('#aMainContent select#iso_mod');
+    if(cur) isoRefresh();
+  });
+  fsListen('userUpdates', 'userUpdates', ()=>{
+    if(document.getElementById('page_updates') && !document.getElementById('page_updates').classList.contains('hidden')) renderUserUpdates();
+  });
+}
 
 function seed(){
   if(!localStorage.getItem('rz_seeded')){
@@ -787,25 +795,15 @@ function seed(){
   }
 }
 seed();
-rzSyncPullAll().then(()=>{
-  // সার্ভার থেকে fresh ডেটা এলে বর্তমানে খোলা পেজটা আবার আঁকা হবে
-  if(typeof RZ_SYNC.onChange === 'function') RZ_SYNC.onChange();
-});
-/* যেকোনো screen যা বর্তমানে visible, sync পাওয়ার পর সেটাই re-render হবে */
-RZ_SYNC.onChange = function(){
-  try{
-    if(document.getElementById('page_dash') && !document.getElementById('page_dash').classList.contains('hidden') && typeof renderUserDash === 'function') renderUserDash();
-    if(typeof adminInited !== 'undefined' && adminInited && typeof renderAdminPage === 'function' && typeof currentAdminPage !== 'undefined') renderAdminPage(currentAdminPage);
-    if(typeof liveTick === 'function') liveTick();
-  }catch(e){ /* কোনো page এখনো তৈরি না হলে চুপচাপ ignore */ }
-};
 
 function session(){ return db('session', null); }
 function setSession(s){ setDb('session', s); }
 function logActivity(entry){
   const a = db('activity', []);
-  a.unshift(Object.assign({id:Date.now()}, entry, {t:Date.now()}));
+  const rec = Object.assign({id:Date.now()+'_'+Math.random().toString(36).slice(2,7)}, entry, {t:Date.now()});
+  a.unshift(rec);
   setDb('activity', a.slice(0,80));
+  fsSet('activity', rec.id, rec);
 }
 
 /* ============ TOAST ============ */
@@ -858,25 +856,50 @@ function userSignup(){
   const pass = document.getElementById('su_pass').value;
   const err = document.getElementById('su_err');
   if(!name||!id||!pass){ err.textContent='সব ঘর পূরণ করুন।'; return; }
+  err.textContent='';
+  if(useFirebase && signupIdKind==='email'){
+    fbAuth.createUserWithEmailAndPassword(id, pass).then(cred=>{
+      const uid = cred.user.uid;
+      const u = {id, uid, name, dept, desig, kind:'email', status:'active', joined:Date.now()};
+      fsSet('users', uid, u);
+      logActivity({sec:dept||'Others', name, status:'done', txt:'নতুন ইউজার যোগ হয়েছেন'});
+      setSession({role:'user', id, uid});
+      toast('স্বাগতম, একাউন্ট তৈরি হয়েছে (Firebase)!');
+      boot();
+    }).catch(e=>{ err.textContent = fbAuthErr(e); });
+    return;
+  }
   const users = db('users', []);
   if(users.some(u=>u.id===id)){ err.textContent='এই আইডি দিয়ে আগেই একাউন্ট আছে।'; return; }
   const u = {id, name, dept, desig, pass, kind:signupIdKind, status:'active', joined:Date.now()};
   users.push(u); setDb('users', users);
+  fsSet('users', id, u);
   logActivity({sec:dept||'Others', name, status:'done', txt:'নতুন ইউজার যোগ হয়েছেন'});
-  err.textContent='';
   setSession({role:'user', id});
-  toast('স্বাগতম, একাউন্ট তৈরি হয়েছে!');
+  toast('স্বাগতম, একাউন্ট তৈরি হয়েছে!'+(useFirebase?'':' (Local Demo Mode — মোবাইল আইডি এখনো Firebase Auth সমর্থন করে না)'));
   boot();
+}
+function fbAuthErr(e){
+  const map = {'auth/email-already-in-use':'এই ইমেইল দিয়ে আগেই একাউন্ট আছে।','auth/weak-password':'পাসওয়ার্ড কমপক্ষে ৬ ক্যারেক্টার হতে হবে।',
+    'auth/invalid-email':'সঠিক ইমেইল দিন।','auth/user-not-found':'একাউন্ট পাওয়া যায়নি।','auth/wrong-password':'পাসওয়ার্ড ভুল।'};
+  return map[e.code] || (e.message || 'একটি সমস্যা হয়েছে, আবার চেষ্টা করুন।');
 }
 function userSignin(){
   const id = document.getElementById('si_id').value.trim();
   const pass = document.getElementById('si_pass').value;
   const err = document.getElementById('si_err');
+  err.textContent='';
+  if(useFirebase && id.includes('@')){
+    fbAuth.signInWithEmailAndPassword(id, pass).then(cred=>{
+      setSession({role:'user', id, uid:cred.user.uid});
+      boot();
+    }).catch(e=>{ err.textContent = fbAuthErr(e); });
+    return;
+  }
   const users = db('users', []);
   const u = users.find(x=>x.id===id && x.pass===pass);
   if(!u){ err.textContent='আইডি অথবা পাসওয়ার্ড সঠিক নয়।'; return; }
   if(u.status==='inactive'){ err.textContent='এই একাউন্টটি নিষ্ক্রিয় করা হয়েছে। HR-এর সাথে যোগাযোগ করুন।'; return; }
-  err.textContent='';
   setSession({role:'user', id});
   boot();
 }
@@ -884,7 +907,12 @@ function userForgot(){
   const id = document.getElementById('fp_id').value.trim();
   const ok = document.getElementById('fp_ok');
   if(!id){ ok.textContent=''; return; }
-  ok.textContent = 'একটি রিসেট লিংক '+id+'-এ পাঠানো হয়েছে (ডেমো)।';
+  if(useFirebase && id.includes('@')){
+    fbAuth.sendPasswordResetEmail(id).then(()=>{ ok.textContent = 'একটি আসল রিসেট লিংক '+id+'-এ পাঠানো হয়েছে (Firebase)।'; })
+      .catch(e=>{ ok.textContent = fbAuthErr(e); });
+    return;
+  }
+  ok.textContent = 'একটি রিসেট লিংক '+id+'-এ পাঠানো হয়েছে (Local Demo Mode)।';
 }
 function logout(){ setDb('session', null); location.reload(); }
 
@@ -907,7 +935,8 @@ function initAdmin(){
   renderAdminPage('dashboard');
   if(!adminInited){
     adminInited=true;
-    setInterval(liveTick, 6000);
+    startFirestoreSync();
+    if(!useFirebase) setInterval(liveTick, 6000); /* demo-mode simulated live feed; Firestore mode gets real pushes instead */
     refreshNotifBadge();
   }
 }
@@ -955,6 +984,7 @@ function renderAdminPage(page){
   if(page==='dashboard'){ main.innerHTML='<div data-current="dashboard"></div>'; renderDashboard(currentDashMode); return; }
   if(page==='bubble'){ renderBubblePage(); return; }
   if(page==='admincontrol'){ renderAdminControl(); return; }
+  if(page==='isochecklist'){ renderIsoPage(); return; }
   if(page.startsWith('mod:')){ const idx=+page.split(':')[1]; renderModulePage(MODULES[idx]); return; }
   if(page.startsWith('sec:')){ const name=decodeURIComponent(page.split(':')[1]); renderSectionPage(name); return; }
   main.innerHTML = '<div class="panelCard">পেজ পাওয়া যায়নি।</div>';
@@ -1101,6 +1131,7 @@ function drawBubble(){
 /* ---- Generic module / section pages ---- */
 function evalColor(pct){ return pct>=85?'green':pct>=60?'yellow':'red'; }
 function renderModulePage(mod){
+  const modIdx = MODULES.indexOf(mod);
   const rows = SECTIONS.slice(0,10).map(s=>{
     const pct = 55+Math.floor(Math.random()*45);
     return {s, pct};
@@ -1111,6 +1142,7 @@ function renderModulePage(mod){
   <div class="btnrow">
     <button class="util" onclick="openImportModal('${mod.name.replace(/'/g,"")}')">📥 Import Data</button>
     <button class="util" onclick="toast('নতুন এন্ট্রি ফর্ম শীঘ্রই যুক্ত হবে')">➕ Add Entry</button>
+    <button class="util" onclick="go('isochecklist'); setTimeout(()=>{document.getElementById('iso_mod').value='${modIdx}'; isoRefresh();},0)">📋 ISO Checklist</button>
     <button class="ghost" onclick="go('admincontrol')">⚙️ Settings</button>
   </div>
   <div class="panelCard mt14">
@@ -1134,6 +1166,89 @@ function renderSectionPage(name){
     : `<p class="smallMuted">এখনো কোনো এমপ্লয়ি ডাটা ইমপোর্ট করা হয়নি। উপরের "Import Employee List" বাটন ব্যবহার করে Master Employee Sheet আপলোড করুন।</p>`}
   </div>`;
 }
+
+/* ---- ISO Checklist (Main Sidebar × Section × Designation) ---- */
+function isoKey(modIdx, sec, desig){ return modIdx+'__'+(sec||'-')+'__'+(desig||'-'); }
+function isoState(){ return db('isoChecklist', {}); }
+function setIsoState(all){ setDb('isoChecklist', all); }
+function renderIsoPage(sel){
+  sel = sel || {mod:0, sec:SECTIONS[0], desig:''};
+  const modOpts = MODULES.map((m,i)=>`<option value="${i}" ${+sel.mod===i?'selected':''}>${m.icon} ${m.name}</option>`).join('');
+  const secOpts = SECTIONS.map(s=>`<option ${sel.sec===s?'selected':''}>${s}</option>`).join('');
+  const desigOpts = '<option value="">— সকল পদবি (General) —</option>' + DESIGNATIONS.map(d=>`<option ${sel.desig===d?'selected':''}>${d}</option>`).join('');
+  const key = isoKey(sel.mod, sel.sec, sel.desig);
+  const state = isoState();
+  const checks = state[key] || {};
+  const total = ISO_BASE.length;
+  const doneCount = ISO_BASE.filter(c=>checks[c.clause]).length;
+  const pct = Math.round((doneCount/total)*100);
+  const color = evalColor(pct);
+  document.getElementById('aMainContent').innerHTML = `
+  <h2 class="pageTitle">📋 ISO কমপ্লায়েন্স চেকলিস্ট</h2>
+  <div class="crumbs">Integrated ISO Management System / Main Sidebar × Section × Designation ভিত্তিক চেকলিস্ট</div>
+  <div class="panelCard">
+    <div class="grid g3">
+      <div><label class="smallMuted">Main Sidebar Module</label><select id="iso_mod" onchange="isoRefresh()">${modOpts}</select></div>
+      <div><label class="smallMuted">Section</label><select id="iso_sec" onchange="isoRefresh()">${secOpts}</select></div>
+      <div><label class="smallMuted">Designation</label><select id="iso_desig" onchange="isoRefresh()">${desigOpts}</select></div>
+    </div>
+    <div class="flexBetween mt14">
+      <div><b>কমপ্লায়েন্স স্কোর:</b> <span class="pill ${color}">${pct}% (${doneCount}/${total})</span></div>
+      <div class="btnrow" style="margin:0;">
+        <button class="util" onclick="isoMarkAll(true)">✅ সব সম্পন্ন করুন</button>
+        <button class="ghost" onclick="isoMarkAll(false)">↺ রিসেট করুন</button>
+        <button class="util" onclick="isoExport()">🖨️ প্রিন্ট / এক্সপোর্ট</button>
+      </div>
+    </div>
+    <div class="progBar mt8"><i style="width:${pct}%;background:${color==='green'?'var(--green)':color==='yellow'?'var(--yellow)':'var(--danger)'}"></i></div>
+  </div>
+  <div class="panelCard mt14" id="isoListWrap">
+    <table><thead><tr><th style="width:60px;">Clause</th><th>ISO চেকলিস্ট আইটেম</th><th style="width:90px;">স্ট্যাটাস</th></tr></thead>
+    <tbody id="isoRows">${isoRowsHtml(sel, checks)}</tbody></table>
+  </div>
+  <p class="smallMuted mt8">প্রতিটি Main Sidebar মডিউল (৪৪টি) × প্রতিটি Section (৩০টি) × প্রতিটি Designation (১৯৬টি) — এর জন্য আলাদাভাবে এই চেকলিস্ট প্রয়োগ ও সংরক্ষণ করা যায়। উপরের ড্রপডাউন পরিবর্তন করে অন্য কম্বিনেশন দেখুন।</p>`;
+}
+function isoRowsHtml(sel, checks){
+  return ISO_BASE.map(c=>`<tr>
+    <td><b>${c.clause}</b></td>
+    <td>${c.item} <span class="smallMuted">— প্রযোজ্য: ${MODULES[sel.mod].name}${sel.desig? ' / '+sel.desig:''}</span></td>
+    <td><label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+      <input type="checkbox" style="width:auto;margin:0;" ${checks[c.clause]?'checked':''} onchange="isoToggle('${c.clause}', this.checked)"> ${checks[c.clause]?'✅':'⬜'}
+    </label></td>
+  </tr>`).join('');
+}
+function isoCurrentSel(){
+  return {
+    mod: +document.getElementById('iso_mod').value,
+    sec: document.getElementById('iso_sec').value,
+    desig: document.getElementById('iso_desig').value
+  };
+}
+function isoRefresh(){ renderIsoPage(isoCurrentSel()); }
+function isoToggle(clause, val){
+  const sel = isoCurrentSel();
+  const key = isoKey(sel.mod, sel.sec, sel.desig);
+  const state = isoState();
+  state[key] = state[key] || {};
+  state[key][clause] = val;
+  setIsoState(state);
+  fsSet('isoChecklist', key, Object.assign({key}, state[key], {updatedAt:Date.now(), updatedBy:(session()&&session().name)||'Admin'}));
+  renderIsoPage(sel);
+}
+function isoMarkAll(val){
+  const sel = isoCurrentSel();
+  const key = isoKey(sel.mod, sel.sec, sel.desig);
+  const state = isoState();
+  const rec = {};
+  ISO_BASE.forEach(c=> rec[c.clause]=val);
+  state[key] = rec;
+  setIsoState(state);
+  fsSet('isoChecklist', key, Object.assign({key}, rec, {updatedAt:Date.now(), updatedBy:(session()&&session().name)||'Admin'}));
+  logActivity({sec:sel.sec, name:(session()&&session().name)||'Admin', status: val?'done':'pending', txt:'ISO চেকলিস্ট '+(val?'সম্পন্ন':'রিসেট')+' করা হয়েছে — '+MODULES[sel.mod].name});
+  renderIsoPage(sel);
+  toast(val? '✅ সব আইটেম সম্পন্ন হিসেবে চিহ্নিত হয়েছে':'রিসেট করা হয়েছে');
+}
+function isoExport(){ window.print(); }
 
 /* ---- Admin Control Panel ---- */
 function renderAdminControl(){
@@ -1191,16 +1306,19 @@ function renderAdminControl(){
 function toggleUser(id){
   const users = db('users', []);
   const u = users.find(x=>x.id===id);
-  if(u){ u.status = u.status==='active'?'inactive':'active'; setDb('users', users); renderAdminControl(); toast('স্ট্যাটাস আপডেট হয়েছে'); }
+  if(u){ u.status = u.status==='active'?'inactive':'active'; setDb('users', users); fsSet('users', u.uid||u.id, u); renderAdminControl(); toast('স্ট্যাটাস আপডেট হয়েছে'); }
 }
 function deleteUser(id){
   let users = db('users', []);
   const u = users.find(x=>x.id===id);
   users = users.filter(x=>x.id!==id);
   setDb('users', users);
+  if(u) fsDelete('users', u.uid||u.id);
   const trash = db('trash', []);
-  trash.unshift({id:Date.now(), name:'User: '+(u? u.name:id), data:u});
+  const trashRec = {id:Date.now(), name:'User: '+(u? u.name:id), data:u};
+  trash.unshift(trashRec);
   setDb('trash', trash);
+  fsSet('trash', trashRec.id, trashRec);
   renderAdminControl();
   toast('ইউজার মুছে ফেলা হয়েছে (রিসাইকেল বিনে সংরক্ষিত)');
 }
@@ -1209,7 +1327,8 @@ function restoreItem(id){
   const item = trash.find(t=>t.id===id);
   trash = trash.filter(t=>t.id!==id);
   setDb('trash', trash);
-  if(item && item.data){ const users = db('users', []); users.push(item.data); setDb('users', users); }
+  fsDelete('trash', id);
+  if(item && item.data){ const users = db('users', []); users.push(item.data); setDb('users', users); fsSet('users', item.data.uid||item.data.id, item.data); }
   renderAdminControl();
   toast('পুনরুদ্ধার সম্পন্ন হয়েছে');
 }
@@ -1234,6 +1353,21 @@ function importMasterCsv(){
     setDb('employees', emps);
     logActivity({sec:'System', name:'Admin', status:'done', txt: added+' জন এমপ্লয়ি ইমপোর্ট করা হয়েছে'});
     document.getElementById('csvPreview').textContent = added+' টি সারি সফলভাবে ইমপোর্ট হয়েছে ✅';
+    if(useFirebase){
+      if(added>18000){
+        document.getElementById('csvPreview').textContent += ' — ⚠️ Firebase ফ্রি (Spark) প্ল্যানে দিনে ~২০,০০০ রাইট লিমিট আছে; এত বড় ফাইলের জন্য কয়েক দিনে ভাগ করে ইমপোর্ট করুন অথবা Blaze প্ল্যানে যান।';
+      }
+      const toSync = emps.slice(-added);
+      let i=0;
+      function nextBatch(){
+        const batch = fbDb.batch();
+        const chunk = toSync.slice(i, i+450);
+        if(!chunk.length) return;
+        chunk.forEach(emp=> batch.set(fbDb.collection('employees').doc(String(emp.eid)), emp, {merge:true}));
+        batch.commit().then(()=>{ i+=450; if(i<toSync.length) nextBatch(); }).catch(e=>console.warn('batch import failed', e));
+      }
+      nextBatch();
+    }
     toast('মাস্টার শীট ইমপোর্ট সম্পন্ন');
     renderAdminControl();
   };
@@ -1260,7 +1394,11 @@ function initUser(){
   window._me = me;
   document.getElementById('uInitials').textContent = (me.name||'U').slice(0,1);
   goUser('dash');
-  if(!window._userInited){ window._userInited=true; setInterval(()=>{ if(document.getElementById('page_dash') && !document.getElementById('page_dash').classList.contains('hidden')) renderUserDash(); }, 8000); }
+  if(!window._userInited){
+    window._userInited=true;
+    startFirestoreSync();
+    if(!useFirebase) setInterval(()=>{ if(document.getElementById('page_dash') && !document.getElementById('page_dash').classList.contains('hidden')) renderUserDash(); }, 8000);
+  }
 }
 function greetTime(){
   const h = new Date().getHours();
@@ -1413,15 +1551,26 @@ function pickFile(kind){
   input.click();
 }
 function addSheetFile(file){
-  const item = {name:file.name, size:(file.size/1024).toFixed(0)+' KB', pct:0};
+  const item = {name:file.name, size:(file.size/1024).toFixed(0)+' KB', pct:0, url:null};
   sheetFiles.push(item);
   renderSheetFiles();
-  const idx = sheetFiles.length-1;
-  const timer = setInterval(()=>{
-    item.pct = Math.min(100, item.pct+25);
-    renderSheetFiles();
-    if(item.pct>=100) clearInterval(timer);
-  }, 180);
+  if(useFirebase && fbStorage){
+    const uid = (session()&&(session().uid||session().id))||'anon';
+    const path = 'updates/'+uid+'/'+Date.now()+'_'+file.name;
+    const ref = fbStorage.ref().child(path);
+    const task = ref.put(file);
+    task.on('state_changed',
+      snap=>{ item.pct = Math.round((snap.bytesTransferred/snap.totalBytes)*100); renderSheetFiles(); },
+      err=>{ console.warn('Storage upload failed', err); toast('আপলোড ব্যর্থ হয়েছে: '+file.name); },
+      ()=>{ task.snapshot.ref.getDownloadURL().then(url=>{ item.url=url; item.pct=100; renderSheetFiles(); }); }
+    );
+  } else {
+    const timer = setInterval(()=>{
+      item.pct = Math.min(100, item.pct+25);
+      renderSheetFiles();
+      if(item.pct>=100) clearInterval(timer);
+    }, 180);
+  }
 }
 function renderSheetFiles(){
   const wrap = document.getElementById('sh_files');
@@ -1439,12 +1588,15 @@ function submitSheet(){
   const title = document.getElementById('sh_task').value;
   const note = document.getElementById('sh_note').value;
   const stMap = {Yes:'done', No:'pending', Partial:'partial'};
-  const rec = {uid:session().id, title, status:stMap[sheetStatus], note, files:sheetFiles.slice(), t:Date.now(), complaint:sheetIsComplaint};
+  const uid = (session()&&(session().uid||session().id))||'anon';
+  const rec = {id:Date.now()+'_'+Math.random().toString(36).slice(2,7), uid, title, status:stMap[sheetStatus], note,
+    files:sheetFiles.map(f=>({name:f.name, size:f.size, url:f.url||null})), t:Date.now(), complaint:sheetIsComplaint};
   const all = db('userUpdates', []); all.unshift(rec); setDb('userUpdates', all);
+  fsSet('userUpdates', rec.id, rec);
   const me = window._me||{};
   logActivity({sec:me.dept||'Others', name:me.name||'ইউজার', status:rec.status, txt: (sheetIsComplaint?'অভিযোগ/পরামর্শ জমা দিয়েছেন — ':'আপডেট জমা দিয়েছেন — ')+title});
   closeSheet();
-  toast('✅ আপডেট সফলভাবে জমা হয়েছে!');
+  toast('✅ আপডেট সফলভাবে জমা হয়েছে!'+(useFirebase?' (সব ডিভাইসে সিঙ্ক হচ্ছে)':''));
   goUser('dash');
 }
 

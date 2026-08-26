@@ -108,6 +108,29 @@ class Announcement(models.Model):
         ordering = ["-created_at"]
 
 
+class SyncStore(models.Model):
+    """
+    Generic key/value sync store that mirrors the frontend's localStorage
+    keys 1:1 (rz_entries, rz_users, rz_activity, rz_moduleConfig, ...).
+    This lets index.html keep almost all of its existing logic — only the
+    db()/setDb() functions change to also push/pull from this table — so
+    every browser/device that opens index.html and points at the same
+    server sees the same live data, refreshed on a short poll interval.
+    """
+    key = models.CharField(max_length=120, unique=True, db_index=True)
+    value = models.JSONField(default=dict)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
+
+    class Meta:
+        ordering = ["key"]
+
+    def __str__(self):
+        return f"{self.key} @ {self.updated_at:%Y-%m-%d %H:%M:%S}"
+
+
 class Feedback(models.Model):
     """Employee experience / complaint / suggestion (voice, video, text, docs)."""
     submitted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)

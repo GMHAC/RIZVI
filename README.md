@@ -1,102 +1,196 @@
 # RIZVIWORLD — RIZVI-MANAGEMENT
 ### Integrated Management & Business Intelligence System — Rizvi Fashions Ltd.
 
-## এখনই চালাবেন যেভাবে (কনফিগার ছাড়াই)
-`index.html` যেকোনো ব্রাউজারে খুললেই চলবে — Windows/laptop, Android, iPhone, বড় Smart TV ব্রাউজার।
-Firebase কনফিগার না করলে এটি **Local Demo Mode**-এ চলবে (শুধু এই ব্রাউজারে ডেটা থাকবে, একটা 🟡 নোটিশ দেখাবে)।
+## এই ভার্সনে কী নতুন হলো
+আগের ভার্সনটা ছিল single-device localStorage ডেমো। এই ভার্সনে `backend_django/` এখন
+**সত্যিই চালানোর মতো একটা Django প্রজেক্ট** (আগে শুধু স্ক্যাফোল্ড ফাইল ছিল, `manage.py`/
+`settings.py` ছিল না)। `index.html`-এ এখন একটা **sync layer** যুক্ত হয়েছে — যেই ডিভাইসই
+সার্ভারের সাথে কানেক্টেড থাকুক (ল্যাপটপ, ফোন, ট্যাব, Smart TV browser), সবাই প্রতি
+৩ সেকেন্ডে (adjustable) সার্ভার থেকে নতুন ডেটা পুল করে এবং সাথে সাথে স্ক্রিন আপডেট হয়।
+সার্ভার না পাওয়া গেলে অ্যাপ চুপচাপ আগের মতো localStorage-only ডেমো মোডে fallback করে —
+কিছু ভেঙে যায় না।
 
----
-
-## ধাপ ১ — ফ্রি Firebase প্রজেক্ট বানিয়ে আসল Live Sync চালু করা
-1. https://console.firebase.google.com এ যান → **Add project** → নাম দিন `rizvi-management` (ফ্রি, কার্ড লাগে না — Spark Plan)
-2. প্রজেক্টের ভেতরে বাম পাশে:
-   - **Authentication → Get started → Email/Password চালু করুন**
-   - **Firestore Database → Create database → Start in production mode** (পরে `firestore.rules` আপলোড করবেন)
-   - **Storage → Get started** (ফাইল/ছবি/ভিডিও/অডিও রাখার জন্য)
-3. **Project settings (⚙️) → General → Your apps → Web (`</>`)** এ ক্লিক করে একটা Web App যোগ করুন — এখানে `firebaseConfig` অবজেক্ট পাবেন
-4. `index.html` ফাইলে `firebaseConfig` অংশ খুঁজে বের করুন (search করুন `PASTE_YOUR`) এবং আপনার নিজের মান বসিয়ে দিন
-5. ফাইল সেভ করুন, ব্রাউজারে রিফ্রেশ দিন — টপবারে/লগইন পেজে 🟢 Firebase Live Sync সক্রিয় দেখবেন
-6. Firebase Console → Firestore → Rules ট্যাবে গিয়ে এই প্যাকেজের `firestore.rules` ফাইলের কনটেন্ট পেস্ট করে Publish করুন
-7. একইভাবে Storage → Rules-এ `storage.rules` পেস্ট করে Publish করুন
-
-এটা হয়ে গেলে: signup/login আসল Firebase Authentication দিয়ে হবে, প্রতিটি কাজের আপডেট/অ্যাটাচমেন্ট/অ্যাক্টিভিটি ফিড
-সত্যিকারের multi-device real-time sync হবে — একজন ফোনে আপডেট দিলে অ্যাডমিন সাথে সাথে ল্যাপটপে দেখবে, কোনো রিফ্রেশ ছাড়াই।
-
-## ধাপ ২ — GitHub-এ আপলোড ও ফ্রি হোস্টিং (GitHub Pages)
-এই ফোল্ডারে ইতিমধ্যে git init করা আছে, প্রথম কমিটও করা আছে। শুধু নিচের ধাপ অনুসরণ করুন:
-
+## চালানো — দুই ধাপ
+```bash
+cd backend_django
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser        # Django admin-এর জন্য (ঐচ্ছিক)
+python manage.py seed_rizviworld        # 15 Department / 39 Section / 247 Designation লোড
+python manage.py collectstatic --noinput
+python run_server.py
 ```
-git remote add origin https://github.com/<আপনার-ইউজারনেম>/<repo-name>.git
-git branch -M main
-git push -u origin main
-```
+এরপর ব্রাউজারে: `http://<এই-কম্পিউটারের-LAN-IP>:8000` — LAN IP সার্ভার চালু হলে
+টার্মিনালেই দেখাবে। ফ্যাক্টরির যেকোনো ডিভাইস, একই WiFi/LAN-এ থাকলেই, এই ঠিকানায় গিয়ে
+একই লাইভ ডেটা দেখতে পাবে।
 
-তারপর GitHub repo → Settings → Pages → Branch: main / (root) সিলেক্ট করে Save করুন।
-কিছুক্ষণ পর `https://<আপনার-ইউজারনেম>.github.io/<repo-name>/` লিংকে পুরো অ্যাপ লাইভ পাবেন — সম্পূর্ণ ফ্রি,
-কোনো সার্ভার খরচ ছাড়া। ল্যাপটপ, মোবাইল, স্মার্ট TV ব্রাউজার — সব জায়গা থেকে এই এক লিংকে ঢোকা যাবে।
+## লগইন তথ্য (ডেমো — production-এ অবশ্যই পাল্টান)
+**Admin Portal** — Email: `ssheraji@gmail.com` / Password: `Admin123456`
+**Employee Portal** — Sign Up করে নতুন একাউন্ট (Email/Mobile), Forgot Password ডেমো
 
-## ধাপ ৩ — নিজের ল্যাপটপে PostgreSQL/Django backend (পরবর্তী পর্যায়ে, ঐচ্ছিক)
-আপনি বলেছেন PostgreSQL ইনস্টল করা আছে — `backend_django/` ফোল্ডারে সেই স্ক্যাফোল্ড দেওয়া আছে
-(models, serializers, views, admin — README ভেতরে)। এটা এখনই index.html-এর সাথে সরাসরি যুক্ত না;
-Firebase দিয়ে ইতিমধ্যেই আসল multi-device sync পেয়ে যাচ্ছেন বলে এটা ঐচ্ছিক দ্বিতীয় স্তর —
-প্রতিষ্ঠানের নিজস্ব সার্ভারে হোস্ট করে আরও কড়াকড়ি নিয়ন্ত্রণ/রিপোর্টিং চাইলে ভবিষ্যতে যুক্ত করা যাবে।
+## সততার সাথে যা এখনো সীমাবদ্ধ (গুরুত্বপূর্ণ — না বললে আপনার ক্ষতি হবে)
 
----
+**১. "প্রতি সেকেন্ডে লাখ লাখ আপডেট" বাস্তবসম্মত লক্ষ্য না।**
+৭–৮ হাজার ইউজারের একটা ফ্যাক্টরি ERP-তে বাস্তব চাহিদা হলো: কেউ একটা এন্ট্রি দিলে
+কয়েক সেকেন্ডের মধ্যে অন্য সবার স্ক্রিনে সেটা দেখা যাওয়া (near real-time) — এইটাই এখন
+কাজ করছে (৩ সেকেন্ড পোলিং)। এটাকে আরও দ্রুত (sub-second, WebSocket-ভিত্তিক) করা সম্ভব,
+কিন্তু "লাখ লাখ per second" সংখ্যাটা কোনো বাস্তব ERP-তে অর্থবহ লক্ষ্য না — কোনো ভেন্ডর
+সততার সাথে এই সংখ্যা গ্যারান্টি দেবে না।
 
-## সততার সাথে একটা সংখ্যা নিয়ে পরিষ্কার কথা বলি
-আপনি চেয়েছেন "প্রতি সেকেন্ডে লাখ লাখ আপডেট" নিশ্চিত করতে। এটা নিয়ে সরাসরি বলা দরকার:
+**২. আমি (Claude) নিজে থেকে ইন্টারনেটে হোস্ট/পাবলিশ করতে পারি না, URL দিতে পারি না।**
+আমার sandbox-এ ইন্টারনেট বন্ধ, তাই আমি কোনো সার্ভারে deploy করে লাইভ লিংক তৈরি করতে
+পারব না। এই ZIP-টা আপনাকে ডাউনলোড করে নিজে অথবা কারো মাধ্যমে হোস্ট করতে হবে —
+নিচে ফ্রি অপশনগুলোর তুলনা ও ধাপে ধাপে গাইড দেওয়া আছে।
 
-- Firebase-এর ফ্রি (Spark) প্ল্যানে দিনে সীমা: প্রায় ৫০,০০০ read + ২০,০০০ write + ১GB স্টোরেজ + ১০GB/মাস ডেটা ট্রান্সফার।
-  এটা প্রতি সেকেন্ডে না, প্রতি দিনে এই সংখ্যা।
-- আপনার প্রতিষ্ঠানে ৬,০০০–৮,০০০ কর্মী প্রতিদিন কয়েকবার করে আপডেট দিলে বাস্তব সংখ্যা দাঁড়ায়
-  দিনে প্রায় ২০,০০০–৫০,০০০ write — যেটা ফ্রি প্ল্যানের ভেতরেই আরামে চলে যায়।
-- কিন্তু "প্রতি সেকেন্ডে লাখ লাখ (মিলিয়ন) আপডেট" আক্ষরিক অর্থে Facebook/Google স্কেলের ট্রাফিক —
-  এটা কোনো ফ্রি সার্ভিস তো দূরের কথা, বেশিরভাগ বড় কোম্পানির সিস্টেমও প্রতি সেকেন্ডে অতটা আপডেট প্রসেস করে না।
-  কোনো প্রোভাইডার (Firebase, AWS, Google Cloud — ফ্রি বা পেইড কোনোটাই) এই আক্ষরিক দাবি "guarantee" করে না,
-  কারণ বাস্তবে এত ট্রাফিকের দরকারও পড়ে না আপনার প্রতিষ্ঠানের আকারে।
-- আপনার আসল প্রয়োজনের জন্য (৮ হাজার ইউজার, দৈনিক আপডেট, লক্ষ লক্ষ সঞ্চিত ডকুমেন্ট — একসাথে প্রতি
-  সেকেন্ডে না) Firebase Spark প্ল্যান যথেষ্ট শুরু করার জন্য, আর ট্রাফিক বাড়লে Blaze প্ল্যানে (pay-as-you-go,
-  তখনও অনেক সস্তা — প্রতি ১ লাখ write প্রায় $0.18) আপগ্রেড করলেই আপনার পুরো প্রতিষ্ঠানের প্রকৃত চাহিদা
-  নিশ্চিন্তে সামলাবে।
+**৩. ফাইল আপলোড (Word/PDF/ছবি/ভিডিও/অডিও) এখন সার্ভারের `media/` ফোল্ডারে যায়** —
+localStorage-এর কয়েক MB সীমা আর প্রযোজ্য না, কারণ এগুলো Django backend-এর
+`EntryDocument`/`Feedback` মডেলে সেভ হয়। তবে *frontend-এর যে অংশগুলো এখনো সরাসরি
+`db()/setDb()` ব্যবহার করে (ড্যাশবোর্ড, টাস্ক, একটিভিটি লগ)*, সেগুলো sync layer দিয়ে
+কভার হয়ে গেছে; কিন্তু বাইনারি ফাইল আপলোডের UI অংশ (voice/video attach বাটন) এখনো
+সরাসরি `/api/rizviworld/entries/` বা `/api/rizviworld/feedback/`-এ `FormData` দিয়ে
+পাঠানোর কোড বাকি আছে — `backend_django/README.md`-এ উদাহরণ দেওয়া আছে।
 
-সংক্ষেপে: আপনার প্রতিষ্ঠানের প্রকৃত স্কেলের জন্য এই সেটআপ ১০০% যথেষ্ট এবং নির্ভরযোগ্য — কিন্তু
-"প্রতি সেকেন্ডে লাখ লাখ" আক্ষরিক সংখ্যাটা কোনো সিস্টেমই "guarantee" করে না বলে সেটা এখানে না বলে
-সঠিক প্রত্যাশা দেওয়াই আমার কাজ মনে করলাম।
+## ফ্রি হোস্টিং অপশন — কোনটা কখন
+| অপশন | উপযুক্ত কখন | সীমাবদ্ধতা |
+|---|---|---|
+| **শুধু LAN (এই run_server.py)** | ফ্যাক্টরির ভেতরেই সবাই কাজ করে, ইন্টারনেট দরকার নেই | বাইরে থেকে/অন্য শাখা থেকে access নেই |
+| **Railway / Render (free tier)** | ইন্টারনেটে সহজে publish, PostgreSQL free দেয় | Free tier ঘুমিয়ে যায় (inactivity), ৭-৮ হাজার concurrent-এর জন্য paid plan লাগবেই |
+| **PythonAnywhere (free tier)** | ছোট scale টেস্টের জন্য সহজ | কাস্টম ডোমেইন/স্কেল সীমিত |
+| **Firebase** | এটা Django/Python হোস্ট করে না (Node/static/Firestore-কেন্দ্রিক) — এই প্রজেক্টের জন্য সরাসরি উপযুক্ত না | — |
+| **GitHub Pages** | শুধু static ফাইল হোস্ট করে (index.html একা), Django backend চালাতে পারে না | backend আলাদা কোথাও লাগবে |
+| **আপনার নিজের VPS/cloud server** (যেমন DigitalOcean/AWS, paid) | আসল production, ৭-৮ হাজার concurrent ইউজার, backup, security — সবচেয়ে বাস্তবসম্মত | খরচ আছে, but এইটা সৎ পরামর্শ |
 
----
-
-## এই ভার্সনে নতুন যা যোগ হলো
-- Firebase Authentication (Email/Password) — signup/signin/forgot password এখন আসল
-- Firestore real-time listeners — Activity Feed, Users, Employees, User Updates, ISO Checklist সব
-  collection-এ live onSnapshot — একাধিক ডিভাইস/ব্রাউজারে সত্যিকারের auto-sync
-- Firebase Storage — কাজের আপডেটে Word/PDF/Excel/ছবি/ভিডিও/অডিও এখন সত্যিকারের আপলোড
-  (আসল progress bar, ডাউনলোড URL সহ)
-- Master Employee CSV import এখন Firestore batch write দিয়ে সব ডিভাইসে সিঙ্ক হয় (২০k+ সারি হলে
-  একটা সতর্কবার্তাও দেখাবে, কয়েক দিনে ভাগ করে ইমপোর্ট করার পরামর্শসহ)
-- firestore.rules ও storage.rules — Firebase Console-এ পেস্ট করার জন্য প্রস্তুত সিকিউরিটি রুলস
-- Local git repo প্রস্তুত — GitHub-এ পুশ করে GitHub Pages-এ ফ্রি হোস্ট করা যাবে
-- 📋 ISO Checklist মডিউল — Main Sidebar-এর ৪৪টি অপারেশনাল মডিউল, ৩০টি Section, ১৯৬টি Designation —
-  যেকোনো কম্বিনেশন বেছে ISO 9001:2015-ভিত্তিক ১২-পয়েন্ট কমপ্লায়েন্স চেকলিস্ট (clause reference সহ)
-  পূরণ করা যায়, প্রতিটি কম্বিনেশনের জন্য আলাদা কমপ্লায়েন্স % (green/yellow/red), Firestore-এ সংরক্ষিত ও সিঙ্কড
-
-## ISO Checklist সম্পর্কে সততার সাথে একটা নোট
-এই ১২-পয়েন্ট চেকলিস্টটা ISO 9001:2015-এর সাধারণ কাঠামো (generic structure) অনুসরণ করে বানানো —
-প্রতিটি Module/Section/Designation-এর জন্য প্রয়োগযোগ্য একটা সাধারণ টেমপ্লেট। এটা কোনো সার্টিফিকেশন বডি
-(BSCI, WRAP, Sedex, ISO সার্টিফাইড অডিটর) কর্তৃক অনুমোদিত অফিসিয়াল চেকলিস্ট না — বাস্তব ISO 9001/14001/45001
-অডিটের জন্য আপনার প্রতিষ্ঠানের QMR (Quality Management Representative) বা সার্টিফাইড কনসালট্যান্ট দিয়ে
-এই চেকলিস্টের ভাষা/আইটেম যাচাই ও প্রয়োজনমতো সংযোজন করিয়ে নেওয়া উচিত।
-
-## লগইন তথ্য
-- Admin: ssheraji@gmail.com / Admin123456
-- Employee: Sign Up করে Email/Mobile দিয়ে নিজে একাউন্ট খুলবে
+**সংক্ষেপে বাস্তব পরামর্শ:** LAN দিয়ে এখনই factory-তে ব্যবহার শুরু করুন (কাজ করবে,
+ফ্রি), আর যদি সত্যিই internet-wide ৭-৮ হাজার concurrent ইউজার + লাখ লাখ ডকুমেন্ট
+চান — সেটার জন্য একটা ছোট paid VPS (মাসে ~$5-20) লাগবেই; কোনো "সম্পূর্ণ ফ্রি" অপশন
+এই স্কেল সততার সাথে সামলাতে পারবে না।
 
 ## ফোল্ডার গঠন
 ```
 RIZVIWORLD_ROOT_INDEX/
-├── index.html            ← মূল অ্যাপ (Firebase + ISO Checklist সহ)
-├── firestore.rules       ← Firebase Console → Firestore → Rules এ পেস্ট করুন
-├── storage.rules         ← Firebase Console → Storage → Rules এ পেস্ট করুন
-├── backend_django/       ← ঐচ্ছিক পরবর্তী-স্তর সার্ভার স্ক্যাফোল্ড (PostgreSQL/Django)
-├── .git/                 ← GitHub-এ পুশ করার জন্য প্রস্তুত local repo
-└── README.md              ← এই ফাইল
+├── index.html                      ← ফ্রন্টএন্ড (এখন sync-সক্ষম)
+├── backend_django/
+│   ├── manage.py                   ← এখন standalone চালানো যায়
+│   ├── run_server.py               ← LAN-এর জন্য Waitress সার্ভার
+│   ├── requirements.txt
+│   ├── rizviworld_site/            ← Django project (settings/urls/wsgi)
+│   └── rizviworld/                 ← app (models/views/serializers/sync)
+└── README.md                        ← এই ফাইল
 ```
+
+## যাচাই করা হয়েছে (honest QA note)
+- সব `.py` ফাইল সিনট্যাক্স-ভ্যালিড (`py_compile`)
+- `index.html`-এর ইনলাইন JS সিনট্যাক্স-ভ্যালিড (`node --check`)
+- HTML ট্যাগ ব্যালান্স ঠিক
+- **যা টেস্ট করা যায়নি:** এই sandbox-এ ইন্টারনেট বন্ধ থাকায় `pip install` করে
+  আসল সার্ভার চালিয়ে end-to-end (browser ↔ Django ↔ DB) টেস্ট করা সম্ভব হয়নি।
+  কোড ম্যানুয়ালি রিভিউ করা হয়েছে, কিন্তু প্রথমবার চালানোর সময় কোনো ছোটখাটো এরর
+  এলে আমাকে জানালে সাথে সাথে ঠিক করে দেব।
+  # RIZVI HR ERP PRODUCTION V1 — ROOT INDEX
+
+Source basis: the exact module-wise database structure supplied by the user.
+
+- 13 modules
+- 295 named tables supplied
+- Customisation/settings registry 1–295
+- PK/FK/index-ready architecture
+- Payroll and attendance partitioning extension points
+- Audit archive extension point
+- Reporting views and stored-procedure extension points
+- API-ready structure
+
+The source says “300+ Tables Architecture” while explicitly naming 295 tables. This package
+preserves the 295 supplied names and does not invent five undocumented business tables.
+# 02_HR_ADMINISTRATION
+
+1. `employee_master`
+2. `employee_personal_info`
+3. `employee_address`
+4. `employee_family`
+5. `employee_documents`
+6. `employee_bank`
+7. `employee_nominee`
+8. `employee_history`
+9. `employee_transfer`
+10. `employee_promotion`
+11. `employee_increment`
+12. `employee_resignation`
+13. `employee_clearance`
+14. `employee_exit_interview`
+15. `recruitment_request`
+16. `job_posting`
+17. `applicant_master`
+18. `interview_schedule`
+19. `candidate_evaluation`
+20. `onboarding`
+21. `probation_management`
+22. `confirmation`
+23. `training_master`
+24. `training_schedule`
+25. `training_participant`
+26. `competency_master`
+27. `KPI_master`
+28. `performance_review`
+29. `appraisal_cycle`
+30. `IDP_plan`
+31. `succession_plan`
+32. `talent_matrix_9box`
+33. `manpower_budget`
+34. `organization_chart`
+35. `employee_skill_matrix`
+36. `disciplinary_action`
+37. `grievance_management`
+38. `welfare_activity`
+39. `employee_feedback`
+40. `HR_dashboard`
+# RIZVI পাঞ্চ ব্রিজ — সেটআপ গাইড
+
+## এটা কী করে
+ফ্যাক্টরির যে PC পাঞ্চ মেশিনের সাথে একই নেটওয়ার্কে আছে, সেই PC-তে এই স্ক্রিপ্ট চালাবেন।
+এটা মেশিনের ডাটা লোকালি গ্রহণ করে ইন্টারনেট দিয়ে (আউটবাউন্ড — এর জন্য firewall-এ কিছু
+খুলতে হবে না) সরাসরি Firestore-এ পাঠিয়ে দেয়।
+
+## ধাপ ১ — Firebase Service Account key ডাউনলোড
+1. https://console.firebase.google.com → আপনার প্রজেক্ট → ⚙️ **Project settings**
+2. **Service accounts** ট্যাব → **Generate new private key**
+3. যে ফাইলটা ডাউনলোড হবে, সেটার নাম বদলে `serviceAccountKey.json` রাখুন
+4. এই ফোল্ডারে (`bridge.js`-এর পাশে) কপি করুন
+
+⚠️ এই ফাইলটা কখনো কারো সাথে শেয়ার করবেন না, GitHub-এ পাবলিকভাবে আপলোড করবেন না —
+এটা দিয়ে যে কেউ আপনার পুরো ডাটাবেসে full access পেয়ে যাবে (Firestore rules bypass করেই)।
+
+## ধাপ ২ — ইনস্টল ও রান
+```
+npm install
+node bridge.js
+```
+সফল হলে দেখাবে:
+```
+✅ TCP bridge শুনছে port 7700-এ
+✅ HTTP fallback শুনছে port 7701-এ
+```
+
+## ধাপ ৩ — মেশিনের কনফিগারেশনে এই PC-র IP বসানো
+আপনার পাঞ্চ মেশিন সফটওয়্যারে (যেটা এখন CSV এক্সপোর্ট করছে) "Push/Server IP" বা
+"ADMS Server" সেটিংসে গিয়ে এই PC-র লোকাল IP (যেমন `192.168.1.50`) আর পোর্ট `7700` বসান।
+
+## ⚠️ সততার সাথে একটা জরুরি কথা
+এই bridge-এর parser আপনার **CSV এক্সপোর্ট ফরম্যাট** (Employee Id, Access Control Id,
+Employee Name, Machine Ip, Log Date, Log Hour, Log Min, Log Sec) অনুযায়ী বানানো —
+কিন্তু মেশিনটা **live সংযোগে ঠিক কোন ফরম্যাটে ডাটা পাঠায়** তা যাচাই করার কোনো উপায়
+আমার কাছে নেই (আসল মেশিন হাতে নেই, sandbox-এ network বন্ধ)। তাই:
+
+1. প্রথমবার চালানোর পর মেশিন থেকে ডাটা এলে টার্মিনালে/`logs/unparsed.log`-এ দেখুন
+2. যদি "চেনা ফরম্যাট না" লেখা আসে, `logs/unparsed.log`-এর ২-৩ লাইন আমাকে কপি করে পাঠান
+3. আমি সাথে সাথে parser-টা ঠিক সেই ফরম্যাট অনুযায়ী ঠিক করে দেব
+
+এটাই একমাত্র বাস্তবসম্মত উপায় — আসল হার্ডওয়্যার ছাড়া "১০০% নিশ্চিত" পার্সার লেখা কারো
+পক্ষেই সম্ভব না, প্রথম live টেস্টের ফলাফল লাগবেই।
+
+## এই PC সবসময় চালু রাখা
+Windows-এ বন্ধ হয়ে গেলে ডাটা আসা বন্ধ হয়ে যাবে। এটা ২৪/৭ চালু রাখতে:
+- Task Scheduler দিয়ে PC চালু হলেই `node bridge.js` অটো-স্টার্ট করান, অথবা
+- `pm2` ব্যবহার করুন: `npm install -g pm2` তারপর `pm2 start bridge.js` `pm2 save`
+
+
+

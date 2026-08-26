@@ -1,8 +1,14 @@
 from rest_framework import serializers
 from .models import (
     Department, Section, Designation, DailyEntry, EntryDocument,
-    Announcement, Feedback, EmployeeAssignment,
+    Announcement, Feedback, EmployeeAssignment, SyncStore,
 )
+
+
+class SyncStoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SyncStore
+        fields = ["key", "value", "updated_at"]
 
 
 class DepartmentSerializer(serializers.ModelSerializer):

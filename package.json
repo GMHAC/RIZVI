@@ -1,0 +1,10 @@
+{
+  "name": "rizvi-punch-bridge",
+  "version": "1.0.0",
+  "description": "লোকাল পাঞ্চ মেশিন থেকে Firestore-এ ডাটা ব্রিজ করে",
+  "main": "bridge.js",
+  "scripts": { "start": "node bridge.js" },
+  "dependencies": {
+    "firebase-admin": "^12.1.0"
+  }
+}

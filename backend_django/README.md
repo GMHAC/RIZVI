@@ -40,6 +40,14 @@ python manage.py seed_rizviworld   # 15 Department / 39 Section / 247 Designatio
 | GET | `/api/rizviworld/dashboard/` | মাস্টার ড্যাশবোর্ড + bubble chart ডেটা |
 | GET/POST | `/api/rizviworld/announcements/` | ম্যানেজমেন্ট ঘোষণা |
 | GET/POST | `/api/rizviworld/feedback/` | অভিজ্ঞতা/অভিযোগ/পরামর্শ |
+| GET | `/api/rizviworld/sync/?since=<ISO>` | পরিবর্তিত সব localStorage-key ডেটা (poll loop এইটা ব্যবহার করে) |
+| GET/PUT | `/api/rizviworld/sync/<key>/` | একটা নির্দিষ্ট key পড়া/লেখা (frontend-এর `db()/setDb()` এইটা কল করে) |
+
+## এখন এইটা আর শুধু "স্ক্যাফোল্ড" না
+এই ফোল্ডারটা এখন একটা **standalone runnable Django project** —
+`manage.py`, `rizviworld_site/settings.py`, `run_server.py` যোগ হয়েছে। আপনার আগের
+RMG_ERP প্রজেক্টের ভেতরে merge করতে চাইলে আগের ৩ ধাপ (উপরে) অনুসরণ করুন; অথবা
+এইটা নিজেই সম্পূর্ণ স্বতন্ত্র সার্ভার হিসেবে সরাসরি চালাতে পারেন (রুট README দেখুন)।
 
 Admin গ্রুপ/staff ইউজার সব কিছু এডিট করতে পারবে; সাধারণ ইউজার শুধু নিজের designation-এর
 entry submit করতে পারবে (`EmployeeAssignment` মডেল দিয়ে ইউজার ↔ designation লিংক করা)।

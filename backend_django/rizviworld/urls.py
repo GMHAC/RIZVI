@@ -1,7 +1,7 @@
 from rest_framework.routers import DefaultRouter
 from .views import (
     DepartmentViewSet, SectionViewSet, DesignationViewSet, DailyEntryViewSet,
-    AnnouncementViewSet, FeedbackViewSet, MasterDashboardView,
+    AnnouncementViewSet, FeedbackViewSet, MasterDashboardView, SyncStoreViewSet,
 )
 
 router = DefaultRouter()
@@ -12,6 +12,7 @@ router.register("entries", DailyEntryViewSet, basename="entries")
 router.register("announcements", AnnouncementViewSet)
 router.register("feedback", FeedbackViewSet, basename="feedback")
 router.register("dashboard", MasterDashboardView, basename="dashboard")
+router.register("sync", SyncStoreViewSet, basename="sync")
 
 urlpatterns = router.urls
 

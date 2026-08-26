@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Department, Section, Designation, DailyEntry, EntryDocument,
-    Announcement, Feedback, EmployeeAssignment,
+    Announcement, Feedback, EmployeeAssignment, SyncStore,
 )
 
 admin.site.register(Department)
@@ -25,3 +25,10 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 
 admin.site.register(EntryDocument)
+
+
+@admin.register(SyncStore)
+class SyncStoreAdmin(admin.ModelAdmin):
+    list_display = ("key", "updated_at", "updated_by")
+    search_fields = ("key",)
+    readonly_fields = ("updated_at",)

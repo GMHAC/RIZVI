@@ -1,18 +1,65 @@
 from collections import defaultdict
 from datetime import date
 
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from rest_framework import viewsets, permissions, decorators, response
 from django.db.models import Q
 
 from .models import (
     Department, Section, Designation, DailyEntry, Announcement,
-    Feedback, EmployeeAssignment,
+    Feedback, EmployeeAssignment, SyncStore,
 )
 from .serializers import (
     DepartmentSerializer, SectionSerializer, DesignationSerializer,
     DailyEntrySerializer, AnnouncementSerializer, FeedbackSerializer,
-    EmployeeAssignmentSerializer,
+    EmployeeAssignmentSerializer, SyncStoreSerializer,
 )
+
+
+class SyncStoreViewSet(viewsets.ViewSet):
+    """
+    Generic multi-device sync endpoint mirroring frontend localStorage keys.
+
+    GET  /api/rizviworld/sync/?since=<ISO timestamp>
+         -> only keys changed after `since` (poll loop uses this every few
+            seconds so every open browser/tab/phone/TV converges quickly).
+    GET  /api/rizviworld/sync/<key>/        -> single key's current value
+    PUT  /api/rizviworld/sync/<key>/        -> upsert a key's value (body: {"value": ...})
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def list(self, request):
+        since = request.query_params.get("since")
+        qs = SyncStore.objects.all()
+        if since:
+            dt = parse_datetime(since)
+            if dt:
+                qs = qs.filter(updated_at__gt=dt)
+        server_time = timezone.now().isoformat()
+        return response.Response({
+            "server_time": server_time,
+            "items": SyncStoreSerializer(qs, many=True).data,
+        })
+
+    def retrieve(self, request, pk=None):
+        obj, _ = SyncStore.objects.get_or_create(key=pk, defaults={"value": None})
+        return response.Response(SyncStoreSerializer(obj).data)
+
+    def update(self, request, pk=None):
+        value = request.data.get("value")
+        user = request.user if request.user.is_authenticated else None
+        obj, _ = SyncStore.objects.update_or_create(
+            key=pk, defaults={"value": value, "updated_by": user}
+        )
+        return response.Response(SyncStoreSerializer(obj).data)
+
+    # allow POST as an alias for PUT (simpler from fetch() without method override)
+    def create(self, request):
+        key = request.data.get("key")
+        if not key:
+            return response.Response({"error": "key is required"}, status=400)
+        return self.update(request, pk=key)
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
